@@ -7,6 +7,10 @@ interface ThemeStore {
   setPreference: (preference: ThemePreference) => void
 }
 
+/**
+ * Fonte da verdade da preferência de tema. `persist` grava em localStorage,
+ * então a escolha sobrevive ao refresh (requisito do case).
+ */
 export const useThemeStore = create<ThemeStore>()(
   persist(
     (set) => ({

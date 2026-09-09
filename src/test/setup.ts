@@ -17,6 +17,10 @@ if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
     }) as unknown as MediaQueryList
 }
 
+// jsdom só tem um stub de `scrollTo` que loga "Not implemented" — o TanStack
+// Router chama no scroll restoration. Substituímos por um no-op silencioso.
+window.scrollTo = () => {}
+
 afterEach(() => {
   cleanup()
 })
