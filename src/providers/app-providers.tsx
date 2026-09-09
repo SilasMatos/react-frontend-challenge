@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { QueryProvider } from '@/providers/query-provider'
+import { ThemeProvider } from '@/features/theme'
 
 export interface AppProvidersProps {
   children: ReactNode
@@ -9,5 +11,9 @@ export interface AppProvidersProps {
  * Novos providers entram só aqui — `app.tsx` e os testes consomem este wrapper.
  */
 export function AppProviders({ children }: AppProvidersProps) {
-  return <>{children}</>
+  return (
+    <QueryProvider>
+      <ThemeProvider>{children}</ThemeProvider>
+    </QueryProvider>
+  )
 }

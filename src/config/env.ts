@@ -25,3 +25,10 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data
+
+/**
+ * `true` só no dev server do Vite (o `vitest` roda com `MODE === 'test'`).
+ * Ponto único de leitura de flags do Vite — gate para ferramentas de dev
+ * como o React Query Devtools.
+ */
+export const isDev = import.meta.env.DEV && import.meta.env.MODE !== 'test'
