@@ -1,6 +1,8 @@
+import type { ReactNode } from 'react'
 import { Frown, Library, SearchX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/empty-state'
+import type { Book } from '@/types/book'
 import type { UseSearchBooksResult } from '../queries/use-search-books'
 import { BOOKS_PAGE_SIZE } from '../types/search'
 import { BookCard } from './book-card'
@@ -10,12 +12,18 @@ import { BookPagination } from './book-pagination'
 export interface SearchResultsProps {
   search: UseSearchBooksResult
   onPageChange: (page: number) => void
+  /** Ação por card (ex.: adicionar à estante). Injetada pela rota. */
+  renderAction?: (book: Book) => ReactNode
 }
 
 const gridClass =
   'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
 
-export function SearchResults({ search, onPageChange }: SearchResultsProps) {
+export function SearchResults({
+  search,
+  onPageChange,
+  renderAction,
+}: SearchResultsProps) {
   if (search.status === 'idle') {
     return (
       <EmptyState
@@ -64,9 +72,17 @@ export function SearchResults({ search, onPageChange }: SearchResultsProps) {
   return (
     <div className="flex flex-col gap-5">
       <ul className={gridClass}>
-        {search.books.map((book) => (
-          <li key={book.id}>
-            <BookCard book={book} className="h-full" />
+        {search.books.map((book, index) => (
+          <li
+            key={book.id}
+            className="animate-in fade-in slide-in-from-bottom-1 fill-mode-both duration-300 ease-out-quart motion-reduce:animate-none"
+            style={{ animationDelay: `${Math.min(index, 10) * 30}ms` }}
+          >
+            <BookCard
+              book={book}
+              action={renderAction?.(book)}
+              className="h-full"
+            />
           </li>
         ))}
       </ul>

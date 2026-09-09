@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
+import type { Book } from '@/types/book'
 import { useSearchBooks } from '../queries/use-search-books'
 import {
   DEFAULT_BOOK_SEARCH_FILTERS,
@@ -9,11 +10,16 @@ import { SearchFilters } from './search-filters'
 import { SearchInput } from './search-input'
 import { SearchResults } from './search-results'
 
+export interface DiscoveryScreenProps {
+  /** Ação por card (ex.: adicionar à estante). Injetada pela rota. */
+  renderAction?: (book: Book) => ReactNode
+}
+
 /**
  * Módulo de Descoberta: busca com debounce, filtros (TanStack Form) e paginação
  * por `startIndex`. Todo o estado de busca vive aqui; a rota só monta a tela.
  */
-export function DiscoveryScreen() {
+export function DiscoveryScreen({ renderAction }: DiscoveryScreenProps) {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState<BookSearchFilters>(
     DEFAULT_BOOK_SEARCH_FILTERS,
@@ -50,7 +56,7 @@ export function DiscoveryScreen() {
   }
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 sm:px-6">
+    <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 duration-300 ease-out-quart animate-in fade-in motion-reduce:animate-none sm:px-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold tracking-tight">Descobrir livros</h1>
         <p className="text-sm text-muted-foreground">
@@ -71,7 +77,11 @@ export function DiscoveryScreen() {
         />
       </div>
 
-      <SearchResults search={search} onPageChange={handlePageChange} />
+      <SearchResults
+        search={search}
+        onPageChange={handlePageChange}
+        renderAction={renderAction}
+      />
     </main>
   )
 }

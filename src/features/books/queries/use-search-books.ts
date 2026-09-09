@@ -31,9 +31,7 @@ export interface UseSearchBooksParams extends Partial<BookSearchFilters> {
 export interface UseSearchBooksResult {
   books: Book[]
   status: BookSearchStatus
-  /** `true` em qualquer fetch (inclui troca de página com dados anteriores na tela). */
   isFetching: boolean
-  /** `true` enquanto o termo digitado ainda não "assentou" no debounce. */
   isDebouncing: boolean
   error: Error | null
   totalItems: number

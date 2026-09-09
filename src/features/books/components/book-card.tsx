@@ -1,11 +1,14 @@
+import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { twMerge } from 'tailwind-merge'
+import { BookCover } from '@/components/book-cover'
 import type { Book } from '@/types/book'
 import { getPublishedYear } from '@/utils/format-date'
-import { BookCover } from './book-cover'
 
 export interface BookCardProps {
   book: Book
+  /** Ação opcional no canto do card (ex.: adicionar à estante). Injetada pela rota. */
+  action?: ReactNode
   className?: string
 }
 
@@ -15,19 +18,24 @@ function authorLine(authors: string[]): string {
   return `${authors[0]} +${authors.length - 1}`
 }
 
-/** Item do grid de resultados. Leva ao detalhe (`/book/$bookId`). */
-export function BookCard({ book, className }: BookCardProps) {
+/**
+ * Item do grid de resultados. O título é um link "esticado" (`after:absolute`)
+ * que cobre o card inteiro, então a `action` fica em cima (`z-10`) e continua
+ * clicável sem aninhar um botão dentro de uma âncora.
+ */
+export function BookCard({ book, action, className }: BookCardProps) {
   const year = getPublishedYear(book.publishedDate)
 
   return (
-    <Link
-      to="/book/$bookId"
-      params={{ bookId: book.id }}
+    <article
       data-slot="book-card"
       className={twMerge(
-        'group flex gap-3 rounded-lg border border-border bg-card p-3 text-left transition-colors',
-        'hover:border-ring/40 hover:bg-muted/40',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'group relative flex gap-3 rounded-lg border border-border bg-card p-3 text-left',
+        'transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out-quart',
+        'hover:-translate-y-0.5 hover:border-ring/40 hover:bg-muted/40 hover:shadow-sm',
+        'active:translate-y-0 active:duration-75',
+        'focus-within:border-ring/40 focus-within:ring-2 focus-within:ring-ring',
+        'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
         className,
       )}
     >
@@ -35,7 +43,13 @@ export function BookCard({ book, className }: BookCardProps) {
 
       <div className="flex min-w-0 flex-col gap-1 py-0.5">
         <h3 className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
-          {book.title}
+          <Link
+            to="/book/$bookId"
+            params={{ bookId: book.id }}
+            className="rounded-sm outline-none after:absolute after:inset-0 after:rounded-lg"
+          >
+            {book.title}
+          </Link>
         </h3>
         <p className="line-clamp-1 text-xs text-muted-foreground">
           {authorLine(book.authors)}
@@ -46,6 +60,10 @@ export function BookCard({ book, className }: BookCardProps) {
           </p>
         ) : null}
       </div>
-    </Link>
+
+      {action ? (
+        <div className="relative z-10 ml-auto shrink-0">{action}</div>
+      ) : null}
+    </article>
   )
 }

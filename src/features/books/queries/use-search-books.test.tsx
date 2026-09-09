@@ -5,8 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useSearchBooks } from './use-search-books'
 import * as booksService from '../services/books-service'
 
-// O debounce tem cobertura própria em `src/hooks/use-debounce.test.ts`.
-// Aqui ele vira identidade para os testes exercitarem só a query/paginação.
 vi.mock('@/hooks/use-debounce', () => ({
   useDebounce: (value: unknown) => value,
 }))

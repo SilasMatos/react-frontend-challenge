@@ -1,16 +1,23 @@
 import { ArrowLeft, ExternalLink, Frown } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
+import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { BookCover } from '@/components/book-cover'
 import { EmptyState } from '@/components/empty-state'
+import type { Book } from '@/types/book'
 import { formatPublishedDate } from '@/utils/format-date'
 import { stripHtml } from '@/utils/strip-html'
 import { useBook } from '../queries/use-book'
-import { BookCover } from './book-cover'
 
 export interface BookDetailScreenProps {
   bookId: string
+  /**
+   * Ação da Estante (adicionar/remover). Injetada pela rota para não acoplar
+   * `features/books` a `features/bookshelf` — a composição vive em `routes/`.
+   */
+  renderAction?: (book: Book) => ReactNode
 }
 
 const backLink = (
@@ -23,11 +30,11 @@ const backLink = (
   </Link>
 )
 
-export function BookDetailScreen({ bookId }: BookDetailScreenProps) {
+export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps) {
   const { book, isLoading, isError, error, refetch } = useBook(bookId)
 
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 sm:px-6">
+    <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 duration-300 ease-out-quart animate-in fade-in motion-reduce:animate-none sm:px-6">
       {backLink}
 
       {isLoading ? <BookDetailSkeleton /> : null}
@@ -46,7 +53,7 @@ export function BookDetailScreen({ bookId }: BookDetailScreenProps) {
       ) : null}
 
       {book ? (
-        <article className="flex flex-col gap-6 sm:flex-row sm:gap-8">
+        <article className="flex flex-col gap-6 duration-300 ease-out-quart animate-in fade-in slide-in-from-bottom-2 fill-mode-both motion-reduce:animate-none sm:flex-row sm:gap-8">
           <BookCover book={book} size="lg" className="mx-auto sm:mx-0" />
 
           <div className="flex min-w-0 flex-1 flex-col gap-4">
@@ -63,6 +70,8 @@ export function BookDetailScreen({ bookId }: BookDetailScreenProps) {
                   : 'Autor desconhecido'}
               </p>
             </header>
+
+            {renderAction ? <div>{renderAction(book)}</div> : null}
 
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:max-w-md">
               <Meta label="Editora" value={book.publisher} />
