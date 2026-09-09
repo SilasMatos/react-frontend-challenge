@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { QueryProvider } from '@/providers/query-provider'
-import { ThemeProvider } from '@/features/theme'
+import { AppToaster, ThemeProvider } from '@/features/theme'
 
 export interface AppProvidersProps {
   children: ReactNode
@@ -13,7 +13,10 @@ export interface AppProvidersProps {
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryProvider>
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        {children}
+        <AppToaster />
+      </ThemeProvider>
     </QueryProvider>
   )
 }

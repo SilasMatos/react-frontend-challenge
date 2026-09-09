@@ -48,15 +48,19 @@ describe('fluxo de autenticação', () => {
     expect(await screen.findByLabelText('E-mail')).toBeInTheDocument()
   })
 
-  it('com sessão, "/" mostra a home autenticada', async () => {
+  it('com sessão, "/" mostra a tela de descoberta', async () => {
     useAuthStore.setState({ session })
     renderAt('/')
-    expect(await screen.findByText(/Olá, Ana/)).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Descobrir livros' }),
+    ).toBeInTheDocument()
   })
 
   it('com sessão, /login redireciona para "/"', async () => {
     useAuthStore.setState({ session })
     renderAt('/login')
-    expect(await screen.findByText(/Olá, Ana/)).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Descobrir livros' }),
+    ).toBeInTheDocument()
   })
 })
