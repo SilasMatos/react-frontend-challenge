@@ -10,7 +10,6 @@ export interface UseBookshelfResult {
   setStatus: (bookId: string, status: BookshelfItem['status']) => void
 }
 
-/** Acesso à Estante para telas que precisam da lista inteira (tabela, contador). */
 export function useBookshelf(): UseBookshelfResult {
   const items = useBookshelfStore((state) => state.items)
   const add = useBookshelfStore((state) => state.add)
@@ -20,10 +19,6 @@ export function useBookshelf(): UseBookshelfResult {
   return { items, count: items.length, add, remove, setStatus }
 }
 
-/**
- * Assinatura seletiva: só re-renderiza quando a presença/entrada **deste** livro
- * muda. Para os botões de adicionar/remover no card e no detalhe.
- */
 export function useShelfEntry(bookId: string): BookshelfItem | undefined {
   return useBookshelfStore((state) =>
     state.items.find((item) => item.book.id === bookId),

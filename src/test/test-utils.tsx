@@ -14,7 +14,6 @@ function Wrapper({ children }: { children: ReactNode }) {
   return <AppProviders>{children}</AppProviders>
 }
 
-/** `render` do Testing Library já embrulhado nos providers globais. */
 export function renderWithProviders(
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>,
@@ -22,15 +21,10 @@ export function renderWithProviders(
   return render(ui, { wrapper: Wrapper, ...options })
 }
 
-/** Cliente de teste sem retry — falhas propagam na hora. */
 export function createTestQueryClient(): QueryClient {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } })
 }
 
-/**
- * Monta a árvore real de rotas num `MemoryHistory` na `initialPath`. Para testes
- * de integração de tela (guard de rota, navegação, `Link`).
- */
 export function renderRoute(initialPath = '/') {
   const queryClient = createTestQueryClient()
   const router = createRouter({

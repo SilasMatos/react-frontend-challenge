@@ -39,7 +39,7 @@ function AuthenticatedLayout() {
           <>
             <Link
               to="/"
-              activeOptions={{ exact: true }}
+              activeOptions={{ exact: true, includeSearch: false }}
               className={navLinkClass}
               activeProps={{ className: 'font-medium text-foreground' }}
             >

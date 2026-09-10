@@ -22,12 +22,6 @@ export interface BookCoverProps
   book: Pick<Book, 'title' | 'thumbnail'>
 }
 
-/**
- * Capa do livro. Renderiza um placeholder (ícone) quando não há `thumbnail` ou
- * quando a imagem falha ao carregar — **nunca uma imagem quebrada** (requisito
- * do case). Compartilhada pela busca (`features/books`) e pela Estante
- * (`features/bookshelf`).
- */
 export function BookCover({ book, size, className, ...props }: BookCoverProps) {
   const [failed, setFailed] = useState(false)
   const showImage = book.thumbnail != null && !failed

@@ -7,7 +7,6 @@ export interface UseAuthResult {
   logout: () => void
 }
 
-/** Estado de sessão reativo — para componentes. */
 export function useAuth(): UseAuthResult {
   const session = useAuthStore((state) => state.session)
   const clearSession = useAuthStore((state) => state.clearSession)
@@ -19,10 +18,6 @@ export function useAuth(): UseAuthResult {
   }
 }
 
-/**
- * Leitura **não-reativa** da sessão — para `beforeLoad` dos guards de rota,
- * que rodam fora do React.
- */
 export function getAuthSession(): AuthSession | null {
   return useAuthStore.getState().session
 }

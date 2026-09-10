@@ -5,12 +5,10 @@ import { Input } from '@/components/ui/input'
 export interface SearchInputProps {
   value: string
   onChange: (value: string) => void
-  /** Mostra um spinner discreto enquanto a busca ainda não "assentou". */
   busy?: boolean
   className?: string
 }
 
-/** Campo de busca de livros. O debounce vive no hook `useSearchBooks`. */
 export function SearchInput({
   value,
   onChange,

@@ -10,10 +10,6 @@ export interface HttpRequestOptions {
   signal?: AbortSignal
 }
 
-/**
- * Erro normalizado da camada HTTP: carrega o `status` e uma `message` amigável,
- * pronta para ser exibida na UI (o TanStack Query captura e repassa).
- */
 export class HttpError extends Error {
   readonly status: number
   readonly statusText: string
@@ -45,10 +41,6 @@ function friendlyMessageForStatus(status: number): string {
   return 'Algo deu errado ao consultar a Google Books API.'
 }
 
-/**
- * Monta a URL final: base + path + query params (descarta vazios/nulos) e injeta
- * o parâmetro `key` apenas quando uma API key está configurada.
- */
 export function buildRequestUrl(
   baseUrl: string,
   path: string,
@@ -115,10 +107,6 @@ async function request<T>(
   }
 }
 
-/**
- * Cliente HTTP central (baseURL, headers e tratamento de erro num só lugar).
- * A Google Books API só expõe leitura para o nosso uso, então só há `get`.
- */
 export const httpClient = {
   get: <T>(path: string, options?: HttpRequestOptions): Promise<T> =>
     request<T>(path, options),

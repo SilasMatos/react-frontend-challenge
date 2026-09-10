@@ -12,7 +12,6 @@ import { BookPagination } from './book-pagination'
 export interface SearchResultsProps {
   search: UseSearchBooksResult
   onPageChange: (page: number) => void
-  /** Ação por card (ex.: adicionar à estante). Injetada pela rota. */
   renderAction?: (book: Book) => ReactNode
 }
 

@@ -5,11 +5,6 @@ export interface BookSearchKey extends BookSearchFilters {
   page: number
 }
 
-/**
- * Query keys centralizadas da feature `books`. Estrutura hierárquica para
- * invalidação seletiva (`booksKeys.all` invalida tudo, `booksKeys.searches()`
- * só as buscas, etc.).
- */
 export const booksKeys = {
   all: ['books'] as const,
   searches: () => [...booksKeys.all, 'search'] as const,

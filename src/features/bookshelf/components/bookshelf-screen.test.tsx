@@ -34,7 +34,6 @@ function item(
   return { book: makeBook(id, title), status, addedAt }
 }
 
-// Ordem de inclusão, título e status divergem — dá para distinguir cada ordenação.
 const SEED: BookshelfItem[] = [
   item('a', 'Refactoring', 'reading', 1),
   item('b', 'Clean Code', 'read', 2),
@@ -146,7 +145,6 @@ describe('BookshelfScreen (rota /estante)', () => {
     })
     await user.click(removeButton)
 
-    // some após ~200ms (transição de saída) — o botão trava no intervalo
     expect(removeButton).toBeDisabled()
     await waitFor(() =>
       expect(

@@ -1,8 +1,3 @@
-/**
- * Remove tags HTML e normaliza espaços. A `description` da Google Books vem com
- * `<p>`, `<br>`, `<i>` etc.; exibimos como texto puro (sem `dangerouslySetInnerHTML`,
- * sem risco de XSS).
- */
 export function stripHtml(value: string): string {
   return value
     .replace(/<\s*br\s*\/?\s*>/gi, '\n')

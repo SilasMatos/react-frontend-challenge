@@ -7,10 +7,6 @@ export interface ShelfNavLinkProps {
   className?: string
 }
 
-/**
- * Link para a Estante no cabeçalho, com contador. Assina só o total de itens —
- * adicionar/remover um livro não re-renderiza o resto do layout.
- */
 export function ShelfNavLink({ className }: ShelfNavLinkProps) {
   const count = useBookshelfStore((state) => state.items.length)
 
@@ -27,7 +23,6 @@ export function ShelfNavLink({ className }: ShelfNavLinkProps) {
       <Library className="size-4" aria-hidden />
       Estante
       {count > 0 ? (
-        // `key` no valor: cada mudança de contagem dá um "pop" sutil.
         <span
           key={count}
           className="rounded-full bg-muted px-1.5 text-xs tabular-nums text-muted-foreground duration-200 ease-spring animate-in zoom-in-75 motion-reduce:animate-none"

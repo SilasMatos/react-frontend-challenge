@@ -6,14 +6,9 @@ export interface EmptyStateProps extends ComponentProps<'div'> {
   icon?: LucideIcon
   title: string
   description?: ReactNode
-  /** Ação opcional (botão de retry, link, etc.). */
   action?: ReactNode
 }
 
-/**
- * Estado vazio / de erro genérico: ícone, título, descrição e uma ação opcional.
- * Usado na busca (ocioso / sem resultados / erro) e na Estante vazia.
- */
 export function EmptyState({
   icon: Icon,
   title,

@@ -12,11 +12,6 @@ export interface UseBookResult {
   refetch: () => void
 }
 
-/**
- * Detalhe de um livro pelo id. Compartilha o cache da busca por `booksKeys`, mas
- * a busca guarda páginas (`Paginated<Book>`) e o detalhe guarda um `Book` — chaves
- * distintas, sem colisão.
- */
 export function useBook(bookId: string): UseBookResult {
   const result = useQuery({
     queryKey: booksKeys.detail(bookId),

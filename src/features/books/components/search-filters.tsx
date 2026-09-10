@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { twMerge } from 'tailwind-merge'
 import { Label } from '@/components/ui/label'
@@ -19,25 +20,24 @@ import {
 } from '../types/search'
 
 export interface SearchFiltersProps {
-  defaultValue: BookSearchFilters
+  value: BookSearchFilters
   onChange: (filters: BookSearchFilters) => void
   className?: string
 }
 
-/**
- * Filtros da busca (`printType` / `orderBy`) com **TanStack Form**. Os selects
- * aplicam na hora: cada mudança de campo dispara `onSubmit`, que reporta os
- * valores ao componente pai.
- */
 export function SearchFilters({
-  defaultValue,
+  value,
   onChange,
   className,
 }: SearchFiltersProps) {
   const form = useForm({
-    defaultValues: defaultValue,
-    onSubmit: ({ value }) => onChange(value),
+    defaultValues: value,
+    onSubmit: ({ value: next }) => onChange(next),
   })
+
+  useEffect(() => {
+    form.reset({ printType: value.printType, orderBy: value.orderBy })
+  }, [form, value.printType, value.orderBy])
 
   return (
     <form

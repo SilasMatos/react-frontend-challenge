@@ -15,7 +15,6 @@ export interface BookPaginationProps {
 
 const formatCount = (value: number) => value.toLocaleString('pt-BR')
 
-/** Navegação por páginas da busca (paginação por `startIndex` na API). */
 export function BookPagination({
   page,
   pageCount,

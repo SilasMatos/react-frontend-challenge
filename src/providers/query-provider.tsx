@@ -8,7 +8,6 @@ export interface QueryProviderProps {
   children: ReactNode
 }
 
-/** Provider do TanStack Query. O client é criado uma vez por montagem. */
 export function QueryProvider({ children }: QueryProviderProps) {
   const [queryClient] = useState(createQueryClient)
 

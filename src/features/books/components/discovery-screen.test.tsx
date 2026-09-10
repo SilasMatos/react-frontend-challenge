@@ -5,7 +5,6 @@ import { renderRoute } from '@/test/test-utils'
 import { useAuthStore } from '@/features/auth'
 import * as booksService from '../services/books-service'
 
-// Debounce tem cobertura própria; aqui vira identidade para o teste ser síncrono.
 vi.mock('@/hooks/use-debounce', () => ({ useDebounce: (value: unknown) => value }))
 
 const searchVolumes = vi.spyOn(booksService, 'searchVolumes')
@@ -104,6 +103,46 @@ describe('DiscoveryScreen', () => {
     expect(
       await screen.findByText('Nenhum livro encontrado'),
     ).toBeInTheDocument()
+  })
+
+  it('hidrata termo, filtros e página a partir da URL (deep-link)', async () => {
+    searchVolumes.mockResolvedValue(volumes(['Duna'], 60))
+
+    renderRoute('/?q=dune&printType=books&orderBy=newest&page=2')
+
+    expect(
+      await screen.findByRole('link', { name: /Duna/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('searchbox')).toHaveValue('dune')
+    expect(searchVolumes).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        query: 'dune',
+        printType: 'books',
+        orderBy: 'newest',
+        startIndex: 20,
+      }),
+    )
+    expect(screen.getByText('2 / 3')).toBeInTheDocument()
+  })
+
+  it('sincroniza o termo e a página com a URL', async () => {
+    const user = userEvent.setup()
+    searchVolumes.mockResolvedValue(volumes(['Livro A'], 60))
+
+    const { router } = renderRoute('/')
+    await user.type(await screen.findByRole('searchbox'), 'js')
+    await screen.findByRole('link', { name: /Livro A/ })
+
+    await waitFor(() =>
+      expect(router.state.location.searchStr).toContain('q=js'),
+    )
+    expect(router.state.location.searchStr).not.toContain('page=')
+
+    await user.click(screen.getByRole('button', { name: /Próxima/ }))
+
+    await waitFor(() =>
+      expect(router.state.location.searchStr).toContain('page=2'),
+    )
   })
 
   it('aplica o filtro de ordenação (TanStack Form)', async () => {

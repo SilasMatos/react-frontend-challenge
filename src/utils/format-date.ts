@@ -15,10 +15,6 @@ const MONTHS_PT = [
 
 const UNKNOWN = 'Data desconhecida'
 
-/**
- * Formata o `publishedDate` da Google Books, que chega em granularidade variável:
- * `"2011"`, `"2011-03"` ou `"2011-03-01"` (e às vezes ausente).
- */
 export function formatPublishedDate(value: string | null | undefined): string {
   if (!value) return UNKNOWN
 
@@ -37,10 +33,6 @@ export function formatPublishedDate(value: string | null | undefined): string {
   return `${day} de ${month} de ${year}`
 }
 
-/**
- * Ano de publicação como número — para ordenar a Estante por data.
- * `null` quando ausente ou inválido.
- */
 export function getPublishedYear(
   value: string | null | undefined,
 ): number | null {

@@ -7,7 +7,6 @@ import { getPublishedYear } from '@/utils/format-date'
 
 export interface BookCardProps {
   book: Book
-  /** Ação opcional no canto do card (ex.: adicionar à estante). Injetada pela rota. */
   action?: ReactNode
   className?: string
 }
@@ -18,11 +17,6 @@ function authorLine(authors: string[]): string {
   return `${authors[0]} +${authors.length - 1}`
 }
 
-/**
- * Item do grid de resultados. O título é um link "esticado" (`after:absolute`)
- * que cobre o card inteiro, então a `action` fica em cima (`z-10`) e continua
- * clicável sem aninhar um botão dentro de uma âncora.
- */
 export function BookCard({ book, action, className }: BookCardProps) {
   const year = getPublishedYear(book.publishedDate)
 

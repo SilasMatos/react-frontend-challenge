@@ -2,31 +2,41 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import type { Book } from '@/types/book'
 import { useSearchBooks } from '../queries/use-search-books'
-import {
-  DEFAULT_BOOK_SEARCH_FILTERS,
-  type BookSearchFilters,
-} from '../types/search'
+import type { BookSearchFilters } from '../types/search'
 import { SearchFilters } from './search-filters'
 import { SearchInput } from './search-input'
 import { SearchResults } from './search-results'
 
 export interface DiscoveryScreenProps {
-  /** Ação por card (ex.: adicionar à estante). Injetada pela rota. */
+  query: string
+  filters: BookSearchFilters
+  page: number
+  onQueryChange: (query: string) => void
+  onFiltersChange: (filters: BookSearchFilters) => void
+  onPageChange: (page: number) => void
   renderAction?: (book: Book) => ReactNode
 }
 
-/**
- * Módulo de Descoberta: busca com debounce, filtros (TanStack Form) e paginação
- * por `startIndex`. Todo o estado de busca vive aqui; a rota só monta a tela.
- */
-export function DiscoveryScreen({ renderAction }: DiscoveryScreenProps) {
-  const [query, setQuery] = useState('')
-  const [filters, setFilters] = useState<BookSearchFilters>(
-    DEFAULT_BOOK_SEARCH_FILTERS,
-  )
-  const [page, setPage] = useState(0)
+export function DiscoveryScreen({
+  query,
+  filters,
+  page,
+  onQueryChange,
+  onFiltersChange,
+  onPageChange,
+  renderAction,
+}: DiscoveryScreenProps) {
+  const [inputValue, setInputValue] = useState(query)
+  const lastSyncedQuery = useRef(query)
 
-  const search = useSearchBooks({ query, page, ...filters })
+  useEffect(() => {
+    if (query !== lastSyncedQuery.current) {
+      lastSyncedQuery.current = query
+      setInputValue(query)
+    }
+  }, [query])
+
+  const search = useSearchBooks({ query: inputValue, page, ...filters })
 
   const notifiedError = useRef<string | null>(null)
   useEffect(() => {
@@ -41,17 +51,13 @@ export function DiscoveryScreen({ renderAction }: DiscoveryScreenProps) {
   }, [search.status, search.error])
 
   function handleQueryChange(value: string) {
-    setQuery(value)
-    setPage(0)
-  }
-
-  function handleFiltersChange(next: BookSearchFilters) {
-    setFilters(next)
-    setPage(0)
+    lastSyncedQuery.current = value
+    setInputValue(value)
+    onQueryChange(value)
   }
 
   function handlePageChange(next: number) {
-    setPage(next)
+    onPageChange(next)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -66,15 +72,12 @@ export function DiscoveryScreen({ renderAction }: DiscoveryScreenProps) {
 
       <div className="flex flex-col gap-3">
         <SearchInput
-          value={query}
+          value={inputValue}
           onChange={handleQueryChange}
           busy={search.isDebouncing || (search.isFetching && search.status !== 'loading')}
           className="max-w-xl"
         />
-        <SearchFilters
-          defaultValue={DEFAULT_BOOK_SEARCH_FILTERS}
-          onChange={handleFiltersChange}
-        />
+        <SearchFilters value={filters} onChange={onFiltersChange} />
       </div>
 
       <SearchResults

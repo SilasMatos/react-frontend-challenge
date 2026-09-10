@@ -15,12 +15,10 @@ import {
 export interface ShelfStatusSelectProps {
   value: BookStatus
   onChange: (value: BookStatus) => void
-  /** Rótulo acessível — a célula da tabela não tem `<label>` visível. */
   ariaLabel?: string
   className?: string
 }
 
-/** Editor de status na linha da Estante (_Quero ler_ / _Lendo_ / _Concluído_). */
 export function ShelfStatusSelect({
   value,
   onChange,

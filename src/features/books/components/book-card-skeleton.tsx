@@ -1,6 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
-/** Placeholder de carregamento com a mesma silhueta do `BookCard`. */
 export function BookCardSkeleton() {
   return (
     <div

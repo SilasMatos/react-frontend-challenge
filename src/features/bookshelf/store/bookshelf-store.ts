@@ -9,17 +9,11 @@ import {
 
 interface BookshelfStore {
   items: BookshelfItem[]
-  /** Adiciona o livro se ele ainda não estiver na estante (idempotente por `book.id`). */
   add: (book: Book, status?: BookStatus) => void
   remove: (bookId: string) => void
   setStatus: (bookId: string, status: BookStatus) => void
 }
 
-/**
- * Fonte da verdade da Estante. `persist` grava em localStorage (`libris:bookshelf`),
- * então os livros salvos sobrevivem ao refresh (requisito do case). Guarda uma
- * lista ordenada por inclusão; a ordenação por coluna é da tabela (TanStack Table).
- */
 export const useBookshelfStore = create<BookshelfStore>()(
   persist(
     (set) => ({

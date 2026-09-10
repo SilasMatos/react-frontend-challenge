@@ -9,7 +9,6 @@ import { loginSchema } from '../schemas/login-schema'
 
 export interface LoginFormProps
   extends Omit<ComponentProps<'form'>, 'onSubmit'> {
-  /** Chamado após o login persistir a sessão com sucesso. */
   onSuccess?: () => void
 }
 

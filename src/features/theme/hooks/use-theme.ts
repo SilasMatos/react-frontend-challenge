@@ -22,7 +22,6 @@ function getSystemTheme(): ResolvedTheme {
   return getDarkMediaQuery()?.matches ? 'dark' : 'light'
 }
 
-/** `system` → tema do SO; qualquer outra preferência vale por si. */
 export function resolveTheme(
   preference: ThemePreference,
   systemTheme: ResolvedTheme,
@@ -31,12 +30,9 @@ export function resolveTheme(
 }
 
 export interface UseThemeResult {
-  /** O que o usuário escolheu: `light` | `dark` | `system`. */
   preference: ThemePreference
-  /** Tema aplicado agora: `light` | `dark`. */
   theme: ResolvedTheme
   setPreference: (preference: ThemePreference) => void
-  /** Alterna claro/escuro a partir do tema aplicado. */
   toggle: () => void
 }
 

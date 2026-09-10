@@ -6,15 +6,10 @@ import { useBookshelf, useShelfEntry } from '../hooks/use-bookshelf'
 
 export interface ShelfToggleButtonProps {
   book: Book
-  /** Com rótulo textual (tela de detalhe); sem rótulo = só ícone (card da busca). */
   withLabel?: boolean
   className?: string
 }
 
-/**
- * Adiciona/remove o livro da Estante, com toast de confirmação e "Desfazer".
- * A remoção guarda o status anterior para restaurar no undo.
- */
 export function ShelfToggleButton({
   book,
   withLabel = false,

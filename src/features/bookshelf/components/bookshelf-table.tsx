@@ -100,7 +100,6 @@ export interface BookshelfTableProps {
   items: BookshelfItem[]
 }
 
-/** Data Grid da Estante (TanStack Table): status editável na linha, ordenação por Título ou Status. */
 export function BookshelfTable({ items }: BookshelfTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -192,7 +191,6 @@ function SortIndicator({ direction }: { direction: false | SortDirection }) {
   )
 }
 
-/** ~200ms para a linha desaparecer (`opacity`) antes de sair do modelo. */
 const ROW_EXIT_MS = 200
 
 function StatusCell({ item }: { item: BookshelfItem }) {
@@ -208,7 +206,6 @@ function StatusCell({ item }: { item: BookshelfItem }) {
   return (
     <div className="relative isolate -mx-1.5 w-fit rounded-md px-1.5">
       {flashes > 0 ? (
-        // `key` remonta o span a cada troca — reinicia a animação CSS.
         <span
           key={flashes}
           aria-hidden

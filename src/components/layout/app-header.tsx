@@ -2,13 +2,10 @@ import type { ComponentProps, ReactNode } from 'react'
 import { twMerge } from 'tailwind-merge'
 
 export interface AppHeaderProps extends ComponentProps<'header'> {
-  /** Navegação principal, à esquerda (ex.: Descobrir, Estante). */
   nav?: ReactNode
-  /** Ações à direita (ex.: alternar tema, sair). */
   actions?: ReactNode
 }
 
-/** Cabeçalho da área autenticada. Presentational — recebe nav e ações via prop. */
 export function AppHeader({ nav, actions, className, ...props }: AppHeaderProps) {
   return (
     <header

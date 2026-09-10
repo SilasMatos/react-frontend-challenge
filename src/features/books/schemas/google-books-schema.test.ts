@@ -41,8 +41,8 @@ describe('googleBooksListSchema', () => {
       totalItems: 3,
       items: [
         { id: 'ok-1', volumeInfo: { title: 'Válido' } },
-        { volumeInfo: { title: 'Sem id' } }, // inválido: `id` obrigatório
-        { id: 42 }, // inválido: `id` não é string
+        { volumeInfo: { title: 'Sem id' } },
+        { id: 42 },
       ],
     })
 

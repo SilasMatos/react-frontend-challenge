@@ -11,20 +11,17 @@ import {
   type BookSearchFilters,
 } from '../types/search'
 
-/** Espera o termo ficar estável por 400ms antes de bater na API (requisito do case). */
 const SEARCH_DEBOUNCE_MS = 400
 
 export type BookSearchStatus =
-  | 'idle' // nada pesquisado ainda
-  | 'loading' // primeira busca em andamento, sem dados
-  | 'error' // primeira busca falhou
-  | 'empty' // busca concluída, zero resultados
-  | 'success' // há resultados para mostrar
+  | 'idle'
+  | 'loading'
+  | 'error'
+  | 'empty'
+  | 'success'
 
 export interface UseSearchBooksParams extends Partial<BookSearchFilters> {
-  /** Termo cru vindo do input — o hook aplica o debounce internamente. */
   query: string
-  /** Página 0-based. `startIndex = page * BOOKS_PAGE_SIZE`. */
   page?: number
 }
 
@@ -40,19 +37,11 @@ export interface UseSearchBooksResult {
   pageSize: number
   hasNextPage: boolean
   hasPreviousPage: boolean
-  /** Faixa exibida, para o rótulo "mostrando X–Y de Z". */
   rangeStart: number
   rangeEnd: number
   refetch: () => void
 }
 
-/**
- * Busca de livros na Google Books API com debounce no termo e paginação por
- * `startIndex`. Usa `placeholderData: keepPreviousData` para a lista não "piscar"
- * ao trocar de página.
- *
- * A query só dispara quando há um termo — nada de request no primeiro render.
- */
 export function useSearchBooks({
   query,
   page = 0,

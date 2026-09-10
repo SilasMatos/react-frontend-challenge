@@ -1,16 +1,5 @@
 import { z } from 'zod'
 
-/**
- * Schemas do **envelope de resposta** da Google Books API
- * (`GET /volumes?q=...`).
- *
- * A API é notoriamente inconsistente: campos faltando, `imageLinks` opcional,
- * `volumeInfo` às vezes quase vazio. A estratégia aqui é ser permissivo — quase
- * tudo é opcional e um volume malformado é **descartado** em vez de derrubar a
- * resposta inteira. A normalização "de verdade" (defaults, `null`, https) fica
- * no mapper (`../mappers/book-mapper`).
- */
-
 const imageLinksSchema = z
   .object({
     smallThumbnail: z.string(),

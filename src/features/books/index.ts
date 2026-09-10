@@ -1,7 +1,3 @@
-// API pública da feature `books`.
-// Importe SEMPRE por `@/features/books` — caminhos internos são bloqueados pelo
-// `no-restricted-imports` (eslint.config.js). Dentro da feature, use imports relativos.
-
 export { DiscoveryScreen } from './components/discovery-screen'
 export { BookDetailScreen } from './components/book-detail-screen'
 

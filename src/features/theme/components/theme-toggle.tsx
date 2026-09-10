@@ -8,7 +8,6 @@ export type ThemeToggleProps = Omit<
   'onClick' | 'children'
 >
 
-/** Alterna claro/escuro. Mostra o ícone do tema para o qual o clique leva. */
 export function ThemeToggle(props: ThemeToggleProps) {
   const { theme, toggle } = useTheme()
   const label = theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'

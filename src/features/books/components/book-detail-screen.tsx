@@ -13,10 +13,6 @@ import { useBook } from '../queries/use-book'
 
 export interface BookDetailScreenProps {
   bookId: string
-  /**
-   * Ação da Estante (adicionar/remover). Injetada pela rota para não acoplar
-   * `features/books` a `features/bookshelf` — a composição vive em `routes/`.
-   */
   renderAction?: (book: Book) => ReactNode
 }
 

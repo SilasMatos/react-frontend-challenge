@@ -6,15 +6,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/empty-state'
 import { useBookshelf } from '../hooks/use-bookshelf'
 
-// A Data Grid carrega o TanStack Table (~60 kB gzip) — só quando a Estante tem
-// livros. Mantém o import de `@/features/bookshelf` leve para o resto do app.
 const BookshelfTable = lazy(() =>
   import('./bookshelf-table').then((module) => ({
     default: module.BookshelfTable,
   })),
 )
 
-/** A Estante: tabela dos livros salvos ou estado vazio. */
 export function BookshelfScreen() {
   const { items, count } = useBookshelf()
 

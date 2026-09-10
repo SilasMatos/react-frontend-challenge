@@ -8,10 +8,6 @@ interface AuthStore {
   clearSession: () => void
 }
 
-/**
- * Fonte da verdade da sessão. `persist` grava em localStorage (chave
- * `libris:auth`), então o usuário continua logado após recarregar a página.
- */
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
