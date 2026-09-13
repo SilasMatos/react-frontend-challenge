@@ -245,10 +245,12 @@ describe('DiscoveryScreen', () => {
     await user.type(await screen.findByRole('searchbox'), 'js')
     await screen.findByRole('link', { name: /Livro A/ })
 
-    await user.click(screen.getByRole('combobox', { name: 'Ordenar' }))
-    const listbox = await screen.findByRole('listbox')
-    await user.click(within(listbox).getByRole('option', { name: 'Mais recentes' }))
+    const group = screen.getByRole('group', { name: 'Ordenar' })
+    await user.click(within(group).getByRole('button', { name: 'Mais recentes' }))
 
+    expect(
+      within(group).getByRole('button', { name: 'Mais recentes' }),
+    ).toHaveAttribute('aria-pressed', 'true')
     await waitFor(() =>
       expect(searchVolumes).toHaveBeenLastCalledWith(
         expect.objectContaining({ orderBy: 'newest', query: 'js' }),

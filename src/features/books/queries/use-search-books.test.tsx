@@ -13,10 +13,17 @@ vi.mock('@/hooks/use-debounce', () => ({
 
 const searchVolumes = vi.spyOn(booksService, 'searchVolumes')
 
-function makeResponse(ids: string[], totalItems = ids.length) {
+function makeResponse(
+  ids: string[],
+  totalItems = ids.length,
+  dates: Record<string, string> = {},
+) {
   return {
     totalItems,
-    items: ids.map((id) => ({ id, volumeInfo: { title: id.toUpperCase() } })),
+    items: ids.map((id) => ({
+      id,
+      volumeInfo: { title: id.toUpperCase(), publishedDate: dates[id] },
+    })),
   }
 }
 
@@ -129,6 +136,41 @@ describe('useSearchBooks', () => {
     expect(searchVolumes).toHaveBeenCalledWith(
       expect.objectContaining({ printType: 'magazines', orderBy: 'newest' }),
     )
+  })
+
+  it('ordena por data de publicação no cliente quando `orderBy` é newest', async () => {
+    searchVolumes
+      .mockResolvedValueOnce(
+        makeResponse(['a', 'b', 'c', 'd'], 60, { a: '2015-09-11', b: '2023', c: '2008-09' }),
+      )
+      .mockResolvedValueOnce(makeResponse(['e'], 60, { e: '2026-04-27' }))
+
+    const { result } = renderHook(
+      () => useSearchBooks({ query: 'react', orderBy: 'newest' }),
+      { wrapper },
+    )
+
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    expect(result.current.books.map((b) => b.id)).toEqual(['b', 'a', 'c', 'd'])
+
+    act(() => result.current.fetchNextPage())
+
+    await waitFor(() =>
+      expect(result.current.books.map((b) => b.id)).toEqual(['e', 'b', 'a', 'c', 'd']),
+    )
+  })
+
+  it('preserva a ordem da API quando `orderBy` é relevance', async () => {
+    searchVolumes.mockResolvedValue(
+      makeResponse(['a', 'b'], 2, { a: '2015-09-11', b: '2023' }),
+    )
+
+    const { result } = renderHook(() => useSearchBooks({ query: 'react' }), {
+      wrapper,
+    })
+
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    expect(result.current.books.map((b) => b.id)).toEqual(['a', 'b'])
   })
 
   it('expõe status de erro quando a busca falha', async () => {

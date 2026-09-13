@@ -26,9 +26,11 @@ export function SearchInput({
         role="searchbox"
         aria-label="Buscar livros"
         placeholder="Busque por título, autor ou assunto…"
+        autoComplete="off"
+        spellCheck={false}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-9 pr-9 pl-8"
+        className="h-9 pr-9 pl-8 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
       />
       {busy ? (
         <Loader2

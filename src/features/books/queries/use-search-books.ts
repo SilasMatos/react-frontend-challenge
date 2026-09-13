@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import {
   keepPreviousData,
   useInfiniteQuery,
@@ -14,6 +15,7 @@ import {
   BOOKS_PAGE_SIZE,
   DEFAULT_BOOK_SEARCH_FILTERS,
   type BookSearchFilters,
+  type SortOrder,
 } from '../types/search'
 
 const SEARCH_DEBOUNCE_MS = 400
@@ -54,7 +56,14 @@ export function getNextStartIndex(lastPage: Paginated<Book>): number | undefined
   return lastPage.items.length > 0 && next < limit ? next : undefined
 }
 
-function selectBooks(data: InfiniteData<Paginated<Book>>): SearchSelection {
+export function compareByNewest(a: Book, b: Book): number {
+  return (b.publishedDate ?? '').localeCompare(a.publishedDate ?? '')
+}
+
+export function selectBooks(
+  data: InfiniteData<Paginated<Book>>,
+  orderBy: SortOrder,
+): SearchSelection {
   const seen = new Set<string>()
   const books: Book[] = []
   for (const page of data.pages) {
@@ -64,6 +73,7 @@ function selectBooks(data: InfiniteData<Paginated<Book>>): SearchSelection {
       books.push(book)
     }
   }
+  if (orderBy === 'newest') books.sort(compareByNewest)
   return { books, totalItems: data.pages[0]?.totalItems ?? 0 }
 }
 
@@ -75,6 +85,11 @@ export function useSearchBooks({
   const trimmedQuery = query.trim()
   const debouncedQuery = useDebounce(trimmedQuery, SEARCH_DEBOUNCE_MS)
   const enabled = debouncedQuery.length > 0
+
+  const select = useCallback(
+    (data: InfiniteData<Paginated<Book>>) => selectBooks(data, orderBy),
+    [orderBy],
+  )
 
   const result = useInfiniteQuery({
     queryKey: booksKeys.search({ query: debouncedQuery, printType, orderBy }),
@@ -91,7 +106,7 @@ export function useSearchBooks({
     },
     initialPageParam: 0,
     getNextPageParam: getNextStartIndex,
-    select: selectBooks,
+    select,
     enabled,
     placeholderData: keepPreviousData,
   })

@@ -1,24 +1,25 @@
 import { useEffect } from 'react'
 import { useForm } from '@tanstack/react-form'
-import { ArrowUpDown } from 'lucide-react'
+import { Clock, Sparkles, type LucideIcon } from 'lucide-react'
 import { twMerge } from 'tailwind-merge'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+  SegmentedControl,
+  SegmentedControlItem,
+} from '@/components/segmented-control'
+import { Separator } from '@/components/ui/separator'
 import {
   PRINT_TYPES,
   PRINT_TYPE_LABELS,
   SORT_ORDERS,
   SORT_ORDER_LABELS,
   type BookSearchFilters,
-  type PrintType,
   type SortOrder,
 } from '../types/search'
+
+const SORT_ORDER_ICONS: Record<SortOrder, LucideIcon> = {
+  relevance: Sparkles,
+  newest: Clock,
+}
 
 export interface SearchFiltersProps {
   value: BookSearchFilters
@@ -48,55 +49,48 @@ export function SearchFilters({
     >
       <form.Field name="printType">
         {(field) => (
-          <ToggleGroup
+          <SegmentedControl
             aria-label="Tipo"
-            value={[field.state.value]}
+            value={field.state.value}
             onValueChange={(next) => {
-              const [selected] = next as PrintType[]
-              if (!selected) return
-              field.handleChange(selected)
+              field.handleChange(next)
               void form.handleSubmit()
             }}
-            spacing={1}
-            className="h-9 rounded-lg bg-muted p-0.5"
           >
             {PRINT_TYPES.map((option) => (
-              <ToggleGroupItem
-                key={option}
-                value={option}
-                className="h-8 rounded-md border border-transparent px-3 text-[0.8rem] text-muted-foreground hover:bg-background/50 hover:text-foreground aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-xs dark:aria-pressed:border-input dark:aria-pressed:bg-input/30"
-              >
+              <SegmentedControlItem key={option} value={option}>
                 {PRINT_TYPE_LABELS[option]}
-              </ToggleGroupItem>
+              </SegmentedControlItem>
             ))}
-          </ToggleGroup>
+          </SegmentedControl>
         )}
       </form.Field>
 
+      <Separator
+        orientation="vertical"
+        className="h-5 data-vertical:self-center max-sm:hidden"
+      />
+
       <form.Field name="orderBy">
         {(field) => (
-          <Select
+          <SegmentedControl
+            aria-label="Ordenar"
             value={field.state.value}
-            onValueChange={(value) => {
-              field.handleChange(value as SortOrder)
+            onValueChange={(next) => {
+              field.handleChange(next)
               void form.handleSubmit()
             }}
           >
-            <SelectTrigger
-              aria-label="Ordenar"
-              className="gap-2 rounded-lg border-border bg-background px-3 hover:bg-muted data-[size=default]:h-9 dark:border-input dark:bg-input/30 dark:hover:bg-input/50"
-            >
-              <ArrowUpDown aria-hidden className="text-muted-foreground" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent align="end">
-              {SORT_ORDERS.map((option) => (
-                <SelectItem key={option} value={option}>
+            {SORT_ORDERS.map((option) => {
+              const Icon = SORT_ORDER_ICONS[option]
+              return (
+                <SegmentedControlItem key={option} value={option}>
+                  <Icon aria-hidden />
                   {SORT_ORDER_LABELS[option]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                </SegmentedControlItem>
+              )
+            })}
+          </SegmentedControl>
         )}
       </form.Field>
     </form>
