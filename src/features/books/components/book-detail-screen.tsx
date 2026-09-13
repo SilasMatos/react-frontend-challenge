@@ -3,9 +3,9 @@ import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { BookCover } from '@/components/book-cover'
 import { EmptyState } from '@/components/empty-state'
+import { Skel, SkeletonMorph } from '@/components/skeleton-morph'
 import type { Book } from '@/types/book'
 import { formatPublishedDate } from '@/utils/format-date'
 import { stripHtml } from '@/utils/strip-html'
@@ -33,8 +33,6 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
     <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 duration-300 ease-out-quart animate-in fade-in motion-reduce:animate-none sm:px-6">
       {backLink}
 
-      {isLoading ? <BookDetailSkeleton /> : null}
-
       {isError ? (
         <EmptyState
           icon={Frown}
@@ -46,40 +44,62 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
             </Button>
           }
         />
-      ) : null}
-
-      {book ? (
-        <article className="flex flex-col gap-6 duration-300 ease-out-quart animate-in fade-in slide-in-from-bottom-2 fill-mode-both motion-reduce:animate-none sm:flex-row sm:gap-8">
-          <BookCover book={book} size="lg" className="mx-auto sm:mx-0" />
+      ) : (
+        <SkeletonMorph
+          loading={isLoading}
+          className="flex flex-col gap-6 duration-300 ease-out-quart animate-in fade-in motion-reduce:animate-none sm:flex-row sm:gap-8"
+        >
+          <Skel
+            as="div"
+            className="mx-auto w-40 shrink-0 self-start overflow-visible rounded-md data-loading:aspect-2/3 sm:mx-0"
+          >
+            {book ? (
+              <BookCover
+                book={book}
+                size="lg"
+                ratio="auto"
+                className="h-auto w-full shadow-md"
+              />
+            ) : null}
+          </Skel>
 
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <header className="flex flex-col gap-1.5">
               <h1 className="text-2xl font-semibold tracking-tight text-balance">
-                {book.title}
+                <Skel as="span" className="inline-block h-7 w-64 max-w-full">
+                  {book?.title}
+                </Skel>
               </h1>
-              {book.subtitle ? (
+              {book?.subtitle ? (
                 <p className="text-base text-muted-foreground">{book.subtitle}</p>
               ) : null}
               <p className="text-sm text-foreground">
-                {book.authors.length > 0
-                  ? book.authors.join(', ')
-                  : 'Autor desconhecido'}
+                <Skel as="span" className="inline-block h-4 w-40 max-w-full">
+                  {book
+                    ? book.authors.length > 0
+                      ? book.authors.join(', ')
+                      : 'Autor desconhecido'
+                    : null}
+                </Skel>
               </p>
             </header>
 
-            {renderAction ? <div>{renderAction(book)}</div> : null}
+            {book && renderAction ? <div>{renderAction(book)}</div> : null}
 
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:max-w-md">
-              <Meta label="Editora" value={book.publisher} />
-              <Meta label="Publicação" value={formatPublishedDate(book.publishedDate)} />
+              <Meta label="Editora" value={book?.publisher ?? null} />
+              <Meta
+                label="Publicação"
+                value={book ? formatPublishedDate(book.publishedDate) : null}
+              />
               <Meta
                 label="Páginas"
-                value={book.pageCount ? String(book.pageCount) : null}
+                value={book?.pageCount ? String(book.pageCount) : null}
               />
-              <Meta label="Idioma" value={book.language?.toUpperCase() ?? null} />
+              <Meta label="Idioma" value={book?.language?.toUpperCase() ?? null} />
             </dl>
 
-            {book.categories.length > 0 ? (
+            {book && book.categories.length > 0 ? (
               <ul className="flex flex-wrap gap-1.5">
                 {book.categories.map((category) => (
                   <li key={category}>
@@ -89,17 +109,21 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
               </ul>
             ) : null}
 
-            {book.description ? (
-              <p className="text-sm leading-relaxed whitespace-pre-line text-foreground/90">
-                {stripHtml(book.description)}
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Sem sinopse disponível para este título.
-              </p>
-            )}
+            <Skel as="div" className="h-24 w-full">
+              {book ? (
+                book.description ? (
+                  <p className="text-sm leading-relaxed whitespace-pre-line text-foreground/90">
+                    {stripHtml(book.description)}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Sem sinopse disponível para este título.
+                  </p>
+                )
+              ) : null}
+            </Skel>
 
-            {book.previewLink || book.infoLink ? (
+            {book && (book.previewLink || book.infoLink) ? (
               <div className="flex flex-wrap gap-2 pt-1">
                 {book.previewLink ? (
                   <Button
@@ -136,8 +160,8 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
               </div>
             ) : null}
           </div>
-        </article>
-      ) : null}
+        </SkeletonMorph>
+      )}
     </main>
   )
 }
@@ -146,26 +170,11 @@ function Meta({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="flex flex-col">
       <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="text-foreground">{value ?? '—'}</dd>
-    </div>
-  )
-}
-
-function BookDetailSkeleton() {
-  return (
-    <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
-      <Skeleton className="mx-auto h-60 w-40 shrink-0 rounded-md sm:mx-0" />
-      <div className="flex flex-1 flex-col gap-4">
-        <Skeleton className="h-7 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-        <div className="grid grid-cols-2 gap-2 sm:max-w-md">
-          <Skeleton className="h-9" />
-          <Skeleton className="h-9" />
-          <Skeleton className="h-9" />
-          <Skeleton className="h-9" />
-        </div>
-        <Skeleton className="h-24 w-full" />
-      </div>
+      <dd className="text-foreground">
+        <Skel as="span" className="inline-block h-4 w-20 max-w-full">
+          {value ?? '—'}
+        </Skel>
+      </dd>
     </div>
   )
 }

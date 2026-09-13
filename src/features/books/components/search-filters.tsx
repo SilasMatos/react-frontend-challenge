@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useForm } from '@tanstack/react-form'
+import { ArrowUpDown } from 'lucide-react'
 import { twMerge } from 'tailwind-merge'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import {
   PRINT_TYPES,
   PRINT_TYPE_LABELS,
@@ -42,62 +43,60 @@ export function SearchFilters({
   return (
     <form
       data-slot="search-filters"
-      className={twMerge('flex flex-wrap items-end gap-3', className)}
+      className={twMerge('flex flex-wrap items-center gap-2', className)}
       onSubmit={(event) => event.preventDefault()}
     >
       <form.Field name="printType">
         {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={field.name} className="text-xs text-muted-foreground">
-              Tipo
-            </Label>
-            <Select
-              value={field.state.value}
-              onValueChange={(value) => {
-                field.handleChange(value as PrintType)
-                void form.handleSubmit()
-              }}
-            >
-              <SelectTrigger id={field.name} size="sm" className="w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PRINT_TYPES.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {PRINT_TYPE_LABELS[option]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <ToggleGroup
+            aria-label="Tipo"
+            value={[field.state.value]}
+            onValueChange={(next) => {
+              const [selected] = next as PrintType[]
+              if (!selected) return
+              field.handleChange(selected)
+              void form.handleSubmit()
+            }}
+            spacing={1}
+            className="h-9 rounded-lg bg-muted p-0.5"
+          >
+            {PRINT_TYPES.map((option) => (
+              <ToggleGroupItem
+                key={option}
+                value={option}
+                className="h-8 rounded-md border border-transparent px-3 text-[0.8rem] text-muted-foreground hover:bg-background/50 hover:text-foreground aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-xs dark:aria-pressed:border-input dark:aria-pressed:bg-input/30"
+              >
+                {PRINT_TYPE_LABELS[option]}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         )}
       </form.Field>
 
       <form.Field name="orderBy">
         {(field) => (
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor={field.name} className="text-xs text-muted-foreground">
-              Ordenar
-            </Label>
-            <Select
-              value={field.state.value}
-              onValueChange={(value) => {
-                field.handleChange(value as SortOrder)
-                void form.handleSubmit()
-              }}
+          <Select
+            value={field.state.value}
+            onValueChange={(value) => {
+              field.handleChange(value as SortOrder)
+              void form.handleSubmit()
+            }}
+          >
+            <SelectTrigger
+              aria-label="Ordenar"
+              className="gap-2 rounded-lg border-border bg-background px-3 hover:bg-muted data-[size=default]:h-9 dark:border-input dark:bg-input/30 dark:hover:bg-input/50"
             >
-              <SelectTrigger id={field.name} size="sm" className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SORT_ORDERS.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {SORT_ORDER_LABELS[option]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              <ArrowUpDown aria-hidden className="text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {SORT_ORDERS.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {SORT_ORDER_LABELS[option]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </form.Field>
     </form>

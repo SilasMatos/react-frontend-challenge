@@ -135,7 +135,7 @@ describe('BookshelfScreen (rota /estante)', () => {
     expect(container.querySelector('.animate-row-flash')).toBeInTheDocument()
   })
 
-  it('remove um livro pela ação da linha', async () => {
+  it('pede confirmação antes de remover um livro pela ação da linha', async () => {
     const user = userEvent.setup()
     useBookshelfStore.setState({ items: SEED })
     renderRoute('/estante')
@@ -145,12 +145,45 @@ describe('BookshelfScreen (rota /estante)', () => {
     })
     await user.click(removeButton)
 
-    expect(removeButton).toBeDisabled()
+    expect(screen.queryByRole('button', { name: 'Remover Clean Code da estante' })).not.toBeInTheDocument()
+    expect(useBookshelfStore.getState().items.map((i) => i.book.id)).toEqual([
+      'a',
+      'b',
+      'c',
+    ])
+
+    const confirmButton = await screen.findByRole('button', {
+      name: 'Confirmar remoção',
+    })
+    await user.click(confirmButton)
+
     await waitFor(() =>
       expect(
         useBookshelfStore.getState().items.map((i) => i.book.id),
       ).toEqual(['a', 'c']),
     )
     expect(screen.queryByRole('link', { name: 'Clean Code' })).not.toBeInTheDocument()
+  })
+
+  it('cancela a remoção ao clicar em cancelar', async () => {
+    const user = userEvent.setup()
+    useBookshelfStore.setState({ items: SEED })
+    renderRoute('/estante')
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Remover Clean Code da estante' }),
+    )
+    await user.click(
+      await screen.findByRole('button', { name: 'Cancelar remoção' }),
+    )
+
+    expect(
+      await screen.findByRole('button', { name: 'Remover Clean Code da estante' }),
+    ).toBeInTheDocument()
+    expect(useBookshelfStore.getState().items.map((i) => i.book.id)).toEqual([
+      'a',
+      'b',
+      'c',
+    ])
   })
 })

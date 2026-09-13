@@ -1,11 +1,6 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-  ChevronDown,
-  ChevronUp,
-  ChevronsUpDown,
-  Trash2,
-} from 'lucide-react'
+import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
 import {
   createColumnHelper,
   createSortedRowModel,
@@ -17,7 +12,7 @@ import {
 } from '@tanstack/react-table'
 import { toast } from 'sonner'
 import { twMerge } from 'tailwind-merge'
-import { Button } from '@/components/ui/button'
+import { ConfirmButton } from '@/components/confirm-button'
 import { BookCover } from '@/components/book-cover'
 import { formatPublishedDate } from '@/utils/format-date'
 import { normalizeText } from '@/utils/normalize-text'
@@ -154,7 +149,7 @@ export function BookshelfTable({ items }: BookshelfTableProps) {
               key={row.id}
               className={twMerge(
                 'border-b border-border transition-[opacity,background-color] duration-200 ease-out last:border-0 hover:bg-muted/30',
-                'has-[button[data-removing]]:pointer-events-none has-[button[data-removing]]:opacity-40',
+                'has-[[data-removing]]:pointer-events-none has-[[data-removing]]:opacity-40',
                 'motion-reduce:transition-none',
               )}
             >
@@ -225,7 +220,7 @@ function ActionsCell({ item }: { item: BookshelfItem }) {
   const { add, remove } = useBookshelf()
   const [removing, setRemoving] = useState(false)
 
-  function handleRemove() {
+  function handleConfirm() {
     setRemoving(true)
     window.setTimeout(() => {
       remove(item.book.id)
@@ -241,17 +236,14 @@ function ActionsCell({ item }: { item: BookshelfItem }) {
 
   return (
     <div className="flex justify-end">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        onClick={handleRemove}
+      <ConfirmButton
+        onConfirm={handleConfirm}
         disabled={removing}
         data-removing={removing ? '' : undefined}
-        aria-label={`Remover ${item.book.title} da estante`}
-      >
-        <Trash2 />
-      </Button>
+        label={`Remover ${item.book.title} da estante`}
+        confirmLabel="Confirmar remoção"
+        cancelLabel="Cancelar remoção"
+      />
     </div>
   )
 }

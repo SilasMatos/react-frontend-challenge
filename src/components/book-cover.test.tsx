@@ -17,18 +17,24 @@ describe('BookCover', () => {
       <BookCover book={{ title: 'Sem capa', thumbnail: null }} />,
     )
 
-    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(container.querySelector('img')).not.toBeInTheDocument()
     expect(container.querySelector('[data-slot="book-cover"]')).toHaveAttribute(
-      'data-placeholder',
-      '',
+      'data-status',
+      'empty',
     )
   })
 
   it('cai para o placeholder se a imagem falhar ao carregar', () => {
-    render(<BookCover book={{ title: 'Quebrada', thumbnail: 'https://img/404' }} />)
+    const { container } = render(
+      <BookCover book={{ title: 'Quebrada', thumbnail: 'https://img/404' }} />,
+    )
 
-    fireEvent.error(screen.getByRole('img'))
+    fireEvent.error(container.querySelector('img')!)
 
-    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(container.querySelector('img')).not.toBeInTheDocument()
+    expect(container.querySelector('[data-slot="book-cover"]')).toHaveAttribute(
+      'data-status',
+      'error',
+    )
   })
 })

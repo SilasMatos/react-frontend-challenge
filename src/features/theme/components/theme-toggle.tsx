@@ -22,7 +22,12 @@ export function ThemeToggle(props: ThemeToggleProps) {
       onClick={toggle}
       {...props}
     >
-      {theme === 'dark' ? <Sun /> : <Moon />}
+      <span
+        key={theme}
+        className="inline-flex animate-in zoom-in-50 spin-in-45 duration-300 ease-out-quart motion-reduce:animate-none"
+      >
+        {theme === 'dark' ? <Sun /> : <Moon />}
+      </span>
     </Button>
   )
 }

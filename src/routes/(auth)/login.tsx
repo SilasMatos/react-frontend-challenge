@@ -22,7 +22,7 @@ function LoginPage() {
 
   return (
     <main className="grid min-h-dvh place-items-center bg-background px-6 py-10 text-foreground">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-lg duration-500 ease-out-quart animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none sm:p-8">
         <header className="mb-6 text-center">
           <h1 className="text-xl font-semibold tracking-tight">Libris</h1>
           <p className="mt-1 text-sm text-muted-foreground">

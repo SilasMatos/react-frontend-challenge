@@ -145,6 +145,43 @@ describe('DiscoveryScreen', () => {
     )
   })
 
+  it('preenche a busca a partir de uma sugestão', async () => {
+    const user = userEvent.setup()
+    searchVolumes.mockResolvedValue(volumes(['Clean Code'], 1))
+
+    renderRoute('/')
+    await user.click(await screen.findByRole('button', { name: 'Clean Code' }))
+
+    expect(screen.getByRole('searchbox')).toHaveValue('Clean Code')
+    await waitFor(() =>
+      expect(searchVolumes).toHaveBeenLastCalledWith(
+        expect.objectContaining({ query: 'Clean Code' }),
+      ),
+    )
+  })
+
+  it('aplica o filtro de tipo (TanStack Form)', async () => {
+    const user = userEvent.setup()
+    searchVolumes.mockResolvedValue(volumes(['Livro A'], 1))
+
+    renderRoute('/')
+    await user.type(await screen.findByRole('searchbox'), 'js')
+    await screen.findByRole('link', { name: /Livro A/ })
+
+    const group = screen.getByRole('group', { name: 'Tipo' })
+    await user.click(within(group).getByRole('button', { name: 'Livros' }))
+
+    expect(within(group).getByRole('button', { name: 'Livros' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await waitFor(() =>
+      expect(searchVolumes).toHaveBeenLastCalledWith(
+        expect.objectContaining({ printType: 'books', query: 'js' }),
+      ),
+    )
+  })
+
   it('aplica o filtro de ordenação (TanStack Form)', async () => {
     const user = userEvent.setup()
     searchVolumes.mockResolvedValue(volumes(['Livro A'], 1))
