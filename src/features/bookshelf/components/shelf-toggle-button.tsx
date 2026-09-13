@@ -1,8 +1,8 @@
 import { BookmarkCheck, BookmarkPlus } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import type { Book } from '@/types/book'
 import { useBookshelf, useShelfEntry } from '../hooks/use-bookshelf'
+import { useShelfToast } from '../hooks/use-shelf-toast'
 
 export interface ShelfToggleButtonProps {
   book: Book
@@ -17,27 +17,18 @@ export function ShelfToggleButton({
 }: ShelfToggleButtonProps) {
   const entry = useShelfEntry(book.id)
   const { add, remove } = useBookshelf()
+  const { notifyAdded, notifyRemoved } = useShelfToast()
   const inShelf = entry != null
 
   function handleClick() {
     if (entry) {
-      const previousStatus = entry.status
       remove(book.id)
-      toast('Removido da estante', {
-        description: book.title,
-        action: {
-          label: 'Desfazer',
-          onClick: () => add(book, previousStatus),
-        },
-      })
+      notifyRemoved(book, entry.status)
       return
     }
 
     add(book)
-    toast.success('Adicionado à estante', {
-      description: book.title,
-      action: { label: 'Desfazer', onClick: () => remove(book.id) },
-    })
+    notifyAdded(book)
   }
 
   const label = inShelf ? 'Remover da estante' : 'Adicionar à estante'

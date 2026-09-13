@@ -20,6 +20,12 @@ if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
 
 window.scrollTo = () => {}
 
+if (typeof Element.prototype.setPointerCapture !== 'function') {
+  Element.prototype.setPointerCapture = () => {}
+  Element.prototype.releasePointerCapture = () => {}
+  Element.prototype.hasPointerCapture = () => false
+}
+
 afterEach(() => {
   cleanup()
 })

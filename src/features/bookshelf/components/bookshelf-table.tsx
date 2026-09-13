@@ -10,13 +10,13 @@ import {
   type SortDirection,
   type SortingState,
 } from '@tanstack/react-table'
-import { toast } from 'sonner'
 import { twMerge } from 'tailwind-merge'
 import { ConfirmButton } from '@/components/confirm-button'
 import { BookCover } from '@/components/book-cover'
 import { formatPublishedDate } from '@/utils/format-date'
 import { normalizeText } from '@/utils/normalize-text'
 import { useBookshelf } from '../hooks/use-bookshelf'
+import { useShelfToast } from '../hooks/use-shelf-toast'
 import { BOOK_STATUS_ORDER, type BookshelfItem } from '../types/bookshelf'
 import { ShelfStatusSelect } from './shelf-status-select'
 
@@ -217,20 +217,15 @@ function StatusCell({ item }: { item: BookshelfItem }) {
 }
 
 function ActionsCell({ item }: { item: BookshelfItem }) {
-  const { add, remove } = useBookshelf()
+  const { remove } = useBookshelf()
+  const { notifyRemoved } = useShelfToast()
   const [removing, setRemoving] = useState(false)
 
   function handleConfirm() {
     setRemoving(true)
     window.setTimeout(() => {
       remove(item.book.id)
-      toast('Removido da estante', {
-        description: item.book.title,
-        action: {
-          label: 'Desfazer',
-          onClick: () => add(item.book, item.status),
-        },
-      })
+      notifyRemoved(item.book, item.status)
     }, ROW_EXIT_MS)
   }
 

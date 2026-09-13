@@ -8,6 +8,7 @@ const cover = tv({
   base: 'shrink-0 border border-border',
   variants: {
     size: {
+      xs: 'h-15 w-10',
       sm: 'h-24 w-16',
       md: 'h-40 w-28',
       lg: 'h-60 w-40',
