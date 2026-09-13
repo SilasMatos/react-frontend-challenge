@@ -1,11 +1,7 @@
 import { LogOut } from 'lucide-react'
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  redirect,
-} from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { AppHeader } from '@/components/layout/app-header'
+import { NavLink } from '@/components/layout/nav-link'
 import { Button } from '@/components/ui/button'
 import { getAuthSession, useAuth } from '@/features/auth'
 import { ShelfNavLink } from '@/features/bookshelf'
@@ -19,9 +15,6 @@ export const Route = createFileRoute('/_authenticated')({
   },
   component: AuthenticatedLayout,
 })
-
-const navLinkClass =
-  'relative inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[0.8rem] text-muted-foreground outline-none transition-colors duration-200 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:scale-x-0 after:rounded-full after:bg-primary after:transition-transform after:duration-300 after:ease-out-quart hover:after:scale-x-100 motion-reduce:after:transition-none'
 
 function AuthenticatedLayout() {
   const navigate = Route.useNavigate()
@@ -43,14 +36,9 @@ function AuthenticatedLayout() {
       <AppHeader
         nav={
           <>
-            <Link
-              to="/"
-              activeOptions={{ exact: true, includeSearch: false }}
-              className={navLinkClass}
-              activeProps={{ className: 'font-medium text-foreground after:scale-x-100' }}
-            >
+            <NavLink to="/" activeOptions={{ exact: true, includeSearch: false }}>
               Descobrir
-            </Link>
+            </NavLink>
             <ShelfNavLink />
           </>
         }

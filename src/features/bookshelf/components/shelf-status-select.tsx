@@ -26,7 +26,11 @@ export function ShelfStatusSelect({
   className,
 }: ShelfStatusSelectProps) {
   return (
-    <Select value={value} onValueChange={(next) => onChange(next as BookStatus)}>
+    <Select
+      items={BOOK_STATUS_LABELS}
+      value={value}
+      onValueChange={(next) => onChange(next as BookStatus)}
+    >
       <SelectTrigger
         data-slot="shelf-status-select"
         size="sm"

@@ -108,7 +108,7 @@ export function BookshelfTable({ items }: BookshelfTableProps) {
   })
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
+    <div className="overflow-x-auto rounded-lg border border-border bg-background">
       <table className="w-full min-w-[720px] border-collapse text-sm">
         <caption className="sr-only">Livros salvos na sua estante</caption>
         <thead>

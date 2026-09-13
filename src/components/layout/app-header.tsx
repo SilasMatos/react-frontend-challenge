@@ -1,6 +1,8 @@
 import type { ComponentProps, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { twMerge } from 'tailwind-merge'
+import { Logo } from '@/components/logo'
+import { Separator } from '@/components/ui/separator'
 
 export interface AppHeaderProps extends ComponentProps<'header'> {
   nav?: ReactNode
@@ -17,15 +19,23 @@ export function AppHeader({ nav, actions, className, ...props }: AppHeaderProps)
       )}
       {...props}
     >
-      <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+      <div className="flex min-w-0 items-center gap-3 sm:gap-4">
         <Link
           to="/"
           activeOptions={{ exact: true, includeSearch: false }}
-          className="rounded-sm text-sm font-semibold tracking-tight outline-none transition-all duration-300 ease-out-quart hover:tracking-wider hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+          className="rounded-sm outline-none transition-all duration-300 ease-out-quart hover:tracking-wider hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Libris
+          <Logo />
         </Link>
-        {nav ? <nav className="flex items-center gap-0.5">{nav}</nav> : null}
+        {nav ? (
+          <>
+            <Separator
+              orientation="vertical"
+              className="h-4 data-vertical:self-center"
+            />
+            <nav className="flex items-center gap-0.5">{nav}</nav>
+          </>
+        ) : null}
       </div>
       {actions ? (
         <div className="flex shrink-0 items-center gap-1">{actions}</div>

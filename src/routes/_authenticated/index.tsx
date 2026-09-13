@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
+import { BookBackground } from '@/components/book-background'
 import { DiscoveryScreen, PRINT_TYPES, SORT_ORDERS } from '@/features/books'
 import { ShelfToggleButton } from '@/features/bookshelf'
 
@@ -19,30 +20,33 @@ function DiscoveryRoute() {
   const navigate = Route.useNavigate()
 
   return (
-    <DiscoveryScreen
-      query={q ?? ''}
-      filters={{
-        printType: printType ?? 'all',
-        orderBy: orderBy ?? 'relevance',
-      }}
-      onQueryChange={(value) =>
-        void navigate({
-          search: (prev) => ({ ...prev, q: value.trim() || undefined }),
-          replace: true,
-        })
-      }
-      onFiltersChange={(filters) =>
-        void navigate({
-          search: (prev) => ({
-            ...prev,
-            printType: filters.printType === 'all' ? undefined : filters.printType,
-            orderBy:
-              filters.orderBy === 'relevance' ? undefined : filters.orderBy,
-          }),
-          replace: true,
-        })
-      }
-      renderAction={(book) => <ShelfToggleButton book={book} />}
-    />
+    <div className="relative isolate">
+      <BookBackground className="fixed inset-0 -z-10 h-full w-full" />
+      <DiscoveryScreen
+        query={q ?? ''}
+        filters={{
+          printType: printType ?? 'all',
+          orderBy: orderBy ?? 'relevance',
+        }}
+        onQueryChange={(value) =>
+          void navigate({
+            search: (prev) => ({ ...prev, q: value.trim() || undefined }),
+            replace: true,
+          })
+        }
+        onFiltersChange={(filters) =>
+          void navigate({
+            search: (prev) => ({
+              ...prev,
+              printType: filters.printType === 'all' ? undefined : filters.printType,
+              orderBy:
+                filters.orderBy === 'relevance' ? undefined : filters.orderBy,
+            }),
+            replace: true,
+          })
+        }
+        renderAction={(book) => <ShelfToggleButton book={book} />}
+      />
+    </div>
   )
 }

@@ -125,13 +125,17 @@ describe('BookshelfScreen (rota /estante)', () => {
     useBookshelfStore.setState({ items: [SEED[1]] })
     const { container } = renderRoute('/estante')
 
-    await user.click(
-      await screen.findByRole('combobox', { name: 'Status de Clean Code' }),
-    )
+    const combobox = await screen.findByRole('combobox', {
+      name: 'Status de Clean Code',
+    })
+    expect(combobox).toHaveTextContent('Concluído')
+
+    await user.click(combobox)
     const listbox = await screen.findByRole('listbox')
     await user.click(within(listbox).getByRole('option', { name: 'Lendo' }))
 
     expect(useBookshelfStore.getState().items[0].status).toBe('reading')
+    expect(combobox).toHaveTextContent('Lendo')
     expect(container.querySelector('.animate-row-flash')).toBeInTheDocument()
   })
 
