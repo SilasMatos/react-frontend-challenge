@@ -18,7 +18,7 @@ export function BookshelfScreen() {
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 duration-300 ease-out-quart animate-in fade-in motion-reduce:animate-none sm:px-6">
       <header className="flex flex-col gap-1">
-        <h1 className="text-xl font-semibold tracking-tight">Minha estante</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Minha estante</h1>
         <p className="text-sm text-muted-foreground" aria-live="polite">
           {count === 0
             ? 'Os livros que você salvar aparecem aqui.'

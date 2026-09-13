@@ -2,7 +2,6 @@ import type { BookSearchFilters } from './types/search'
 
 export interface BookSearchKey extends BookSearchFilters {
   query: string
-  page: number
 }
 
 export const booksKeys = {

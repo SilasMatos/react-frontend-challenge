@@ -1,6 +1,11 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  type InfiniteData,
+} from '@tanstack/react-query'
 import { useDebounce } from '@/hooks/use-debounce'
 import type { Book } from '@/types/book'
+import type { Paginated } from '@/types/common'
 import { toBookPage } from '../mappers/book-mapper'
 import { booksKeys } from '../query-keys'
 import { searchVolumes } from '../services/books-service'
@@ -22,7 +27,6 @@ export type BookSearchStatus =
 
 export interface UseSearchBooksParams extends Partial<BookSearchFilters> {
   query: string
-  page?: number
 }
 
 export interface UseSearchBooksResult {
@@ -32,50 +36,68 @@ export interface UseSearchBooksResult {
   isDebouncing: boolean
   error: Error | null
   totalItems: number
-  page: number
-  pageCount: number
-  pageSize: number
   hasNextPage: boolean
-  hasPreviousPage: boolean
-  rangeStart: number
-  rangeEnd: number
+  isFetchingNextPage: boolean
+  nextPageError: Error | null
+  fetchNextPage: () => void
   refetch: () => void
+}
+
+interface SearchSelection {
+  books: Book[]
+  totalItems: number
+}
+
+export function getNextStartIndex(lastPage: Paginated<Book>): number | undefined {
+  const next = lastPage.startIndex + lastPage.pageSize
+  const limit = Math.min(lastPage.totalItems, BOOKS_MAX_RESULT_WINDOW)
+  return lastPage.items.length > 0 && next < limit ? next : undefined
+}
+
+function selectBooks(data: InfiniteData<Paginated<Book>>): SearchSelection {
+  const seen = new Set<string>()
+  const books: Book[] = []
+  for (const page of data.pages) {
+    for (const book of page.items) {
+      if (seen.has(book.id)) continue
+      seen.add(book.id)
+      books.push(book)
+    }
+  }
+  return { books, totalItems: data.pages[0]?.totalItems ?? 0 }
 }
 
 export function useSearchBooks({
   query,
-  page = 0,
   printType = DEFAULT_BOOK_SEARCH_FILTERS.printType,
   orderBy = DEFAULT_BOOK_SEARCH_FILTERS.orderBy,
 }: UseSearchBooksParams): UseSearchBooksResult {
   const trimmedQuery = query.trim()
   const debouncedQuery = useDebounce(trimmedQuery, SEARCH_DEBOUNCE_MS)
-
-  const startIndex = page * BOOKS_PAGE_SIZE
   const enabled = debouncedQuery.length > 0
 
-  const result = useQuery({
-    queryKey: booksKeys.search({ query: debouncedQuery, page, printType, orderBy }),
-    queryFn: async ({ signal }) => {
+  const result = useInfiniteQuery({
+    queryKey: booksKeys.search({ query: debouncedQuery, printType, orderBy }),
+    queryFn: async ({ pageParam, signal }) => {
       const response = await searchVolumes({
         query: debouncedQuery,
         printType,
         orderBy,
-        startIndex,
+        startIndex: pageParam,
         maxResults: BOOKS_PAGE_SIZE,
         signal,
       })
-      return toBookPage(response, startIndex, BOOKS_PAGE_SIZE)
+      return toBookPage(response, pageParam, BOOKS_PAGE_SIZE)
     },
+    initialPageParam: 0,
+    getNextPageParam: getNextStartIndex,
+    select: selectBooks,
     enabled,
     placeholderData: keepPreviousData,
   })
 
   const data = result.data
-  const totalItems = data?.totalItems ?? 0
-  const navigableTotal = Math.min(totalItems, BOOKS_MAX_RESULT_WINDOW)
-  const pageCount = Math.max(1, Math.ceil(navigableTotal / BOOKS_PAGE_SIZE))
-  const books = data?.items ?? []
+  const books = data?.books ?? []
 
   let status: BookSearchStatus
   if (!enabled) {
@@ -94,14 +116,11 @@ export function useSearchBooks({
     isFetching: result.isFetching,
     isDebouncing: trimmedQuery !== debouncedQuery,
     error: result.error,
-    totalItems,
-    page,
-    pageCount,
-    pageSize: BOOKS_PAGE_SIZE,
-    hasNextPage: page + 1 < pageCount,
-    hasPreviousPage: page > 0,
-    rangeStart: totalItems === 0 ? 0 : startIndex + 1,
-    rangeEnd: Math.min(startIndex + BOOKS_PAGE_SIZE, navigableTotal),
+    totalItems: data?.totalItems ?? 0,
+    hasNextPage: result.hasNextPage && !result.isPlaceholderData,
+    isFetchingNextPage: result.isFetchingNextPage,
+    nextPageError: result.isFetchNextPageError ? result.error : null,
+    fetchNextPage: () => void result.fetchNextPage(),
     refetch: () => void result.refetch(),
   }
 }

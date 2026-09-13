@@ -36,7 +36,7 @@ export function BookCard({ book, action, className }: BookCardProps) {
       <BookCover book={book} size="sm" />
 
       <div className="flex min-w-0 flex-col gap-1 py-0.5">
-        <h3 className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
+        <h2 className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
           <Link
             to="/book/$bookId"
             params={{ bookId: book.id }}
@@ -44,7 +44,7 @@ export function BookCard({ book, action, className }: BookCardProps) {
           >
             {book.title}
           </Link>
-        </h3>
+        </h2>
         <p className="line-clamp-1 text-xs text-muted-foreground">
           {authorLine(book.authors)}
         </p>

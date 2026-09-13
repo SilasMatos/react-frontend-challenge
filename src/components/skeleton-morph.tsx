@@ -54,7 +54,10 @@ export function Skel({
     <Comp
       data-slot="skel"
       data-loading={loading || undefined}
-      className={twMerge('relative inline-block overflow-hidden align-middle', className)}
+      className={twMerge(
+        'relative inline-block overflow-hidden rounded-md align-middle',
+        className,
+      )}
       {...props}
     >
       <span

@@ -34,6 +34,12 @@ function AuthenticatedLayout() {
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
+      <a
+        href="#conteudo"
+        className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-2 focus-visible:left-2 focus-visible:z-50 focus-visible:rounded-md focus-visible:bg-background focus-visible:px-3 focus-visible:py-2 focus-visible:text-sm focus-visible:font-medium focus-visible:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        Pular para o conteúdo
+      </a>
       <AppHeader
         nav={
           <>
@@ -64,7 +70,9 @@ function AuthenticatedLayout() {
           </>
         }
       />
-      <Outlet />
+      <div id="conteudo" tabIndex={-1} className="outline-none">
+        <Outlet />
+      </div>
     </div>
   )
 }

@@ -12,7 +12,7 @@ export function AppHeader({ nav, actions, className, ...props }: AppHeaderProps)
     <header
       data-slot="app-header"
       className={twMerge(
-        'sticky top-0 z-10 flex h-10 items-center justify-between gap-3 bg-background/80 px-4 backdrop-blur-sm duration-500 ease-out-quart animate-in fade-in slide-in-from-top-2 motion-reduce:animate-none sm:px-6',
+        'sticky top-0 z-10 flex h-(--header-height) items-center justify-between gap-3 bg-background/80 px-4 backdrop-blur-sm duration-500 ease-out-quart animate-in fade-in slide-in-from-top-2 motion-reduce:animate-none sm:px-6',
         className,
       )}
       {...props}

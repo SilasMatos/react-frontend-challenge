@@ -58,6 +58,7 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
                 book={book}
                 size="lg"
                 ratio="auto"
+                loading="eager"
                 className="h-auto w-full shadow-md"
               />
             ) : null}

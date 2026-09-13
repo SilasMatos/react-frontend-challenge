@@ -60,22 +60,83 @@ describe('DiscoveryScreen', () => {
     )
   })
 
-  it('pagina por startIndex mantendo o termo', async () => {
+  it('carrega mais resultados por startIndex mantendo o termo', async () => {
     const user = userEvent.setup()
-    searchVolumes.mockResolvedValue(volumes(['Livro A'], 60))
+    searchVolumes.mockImplementation(async ({ startIndex }) =>
+      startIndex === 0
+        ? volumes(['Livro A'], 60)
+        : {
+            totalItems: 60,
+            items: [{ id: 'id-b', volumeInfo: { title: 'Livro B', authors: [] } }],
+          },
+    )
 
     renderRoute('/')
     await user.type(await screen.findByRole('searchbox'), 'js')
     await screen.findByRole('link', { name: /Livro A/ })
 
-    await user.click(screen.getByRole('button', { name: /Próxima/ }))
+    await user.click(screen.getByRole('button', { name: 'Carregar mais' }))
 
-    await waitFor(() =>
-      expect(searchVolumes).toHaveBeenLastCalledWith(
-        expect.objectContaining({ query: 'js', startIndex: 20 }),
-      ),
+    expect(await screen.findByRole('link', { name: /Livro B/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Livro A/ })).toBeInTheDocument()
+    expect(searchVolumes).toHaveBeenLastCalledWith(
+      expect.objectContaining({ query: 'js', startIndex: 20 }),
     )
-    expect(screen.getByText('2 / 3')).toBeInTheDocument()
+  })
+
+  it('mantém os resultados e oferece retry quando a próxima página falha', async () => {
+    const user = userEvent.setup()
+    searchVolumes.mockImplementation(async ({ startIndex }) => {
+      if (startIndex === 0) return volumes(['Livro A'], 60)
+      throw new Error('Muitas buscas em pouco tempo.')
+    })
+
+    renderRoute('/')
+    await user.type(await screen.findByRole('searchbox'), 'js')
+    await screen.findByRole('link', { name: /Livro A/ })
+
+    await user.click(screen.getByRole('button', { name: 'Carregar mais' }))
+
+    expect(await screen.findByText('Muitas buscas em pouco tempo.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Livro A/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeInTheDocument()
+  })
+
+  it('carrega a próxima página automaticamente quando o sentinela entra na tela', async () => {
+    const user = userEvent.setup()
+    const callbacks: IntersectionObserverCallback[] = []
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          callbacks.push(callback)
+        }
+        observe() {}
+        disconnect() {}
+      },
+    )
+    searchVolumes.mockResolvedValue(volumes(['Livro A'], 60))
+
+    try {
+      renderRoute('/')
+      await user.type(await screen.findByRole('searchbox'), 'js')
+      await screen.findByRole('link', { name: /Livro A/ })
+      await waitFor(() => expect(callbacks.length).toBeGreaterThan(0))
+
+      const observer = { takeRecords: () => [] } as unknown as IntersectionObserver
+      callbacks.at(-1)?.(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        observer,
+      )
+
+      await waitFor(() =>
+        expect(searchVolumes).toHaveBeenLastCalledWith(
+          expect.objectContaining({ query: 'js', startIndex: 20 }),
+        ),
+      )
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('mostra estado de erro com retry quando a busca falha', async () => {
@@ -105,10 +166,10 @@ describe('DiscoveryScreen', () => {
     ).toBeInTheDocument()
   })
 
-  it('hidrata termo, filtros e página a partir da URL (deep-link)', async () => {
+  it('hidrata termo e filtros a partir da URL (deep-link)', async () => {
     searchVolumes.mockResolvedValue(volumes(['Duna'], 60))
 
-    renderRoute('/?q=dune&printType=books&orderBy=newest&page=2')
+    renderRoute('/?q=dune&printType=books&orderBy=newest')
 
     expect(
       await screen.findByRole('link', { name: /Duna/ }),
@@ -119,13 +180,12 @@ describe('DiscoveryScreen', () => {
         query: 'dune',
         printType: 'books',
         orderBy: 'newest',
-        startIndex: 20,
+        startIndex: 0,
       }),
     )
-    expect(screen.getByText('2 / 3')).toBeInTheDocument()
   })
 
-  it('sincroniza o termo e a página com a URL', async () => {
+  it('sincroniza o termo com a URL sem poluir com os defaults', async () => {
     const user = userEvent.setup()
     searchVolumes.mockResolvedValue(volumes(['Livro A'], 60))
 
@@ -136,13 +196,8 @@ describe('DiscoveryScreen', () => {
     await waitFor(() =>
       expect(router.state.location.searchStr).toContain('q=js'),
     )
-    expect(router.state.location.searchStr).not.toContain('page=')
-
-    await user.click(screen.getByRole('button', { name: /Próxima/ }))
-
-    await waitFor(() =>
-      expect(router.state.location.searchStr).toContain('page=2'),
-    )
+    expect(router.state.location.searchStr).not.toContain('printType=')
+    expect(router.state.location.searchStr).not.toContain('orderBy=')
   })
 
   it('preenche a busca a partir de uma sugestão', async () => {

@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react'
-import { Frown, Library, Search, SearchX } from 'lucide-react'
+import { Frown, Library, Loader2, Search, SearchX } from 'lucide-react'
 import { AsyncBoundary } from '@/components/async-boundary'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/empty-state'
+import { useIntersectionObserver } from '@/hooks/use-intersection-observer'
 import type { Book } from '@/types/book'
 import type { UseSearchBooksResult } from '../queries/use-search-books'
 import { BOOKS_PAGE_SIZE } from '../types/search'
 import { BookCard } from './book-card'
 import { BookCardSkeleton } from './book-card-skeleton'
-import { BookPagination } from './book-pagination'
 
 export interface SearchResultsProps {
   search: UseSearchBooksResult
-  onPageChange: (page: number) => void
+  scrollRoot?: Element | null
   onSuggest?: (term: string) => void
   renderAction?: (book: Book) => ReactNode
 }
@@ -22,12 +22,20 @@ const gridClass =
 
 const SUGGESTIONS = ['Clean Code', 'Machado de Assis', 'Ficção científica', 'Design']
 
+const formatCount = (value: number) => value.toLocaleString('pt-BR')
+
 export function SearchResults({
   search,
-  onPageChange,
+  scrollRoot = null,
   onSuggest,
   renderAction,
 }: SearchResultsProps) {
+  const sentinelRef = useIntersectionObserver(search.fetchNextPage, {
+    enabled: search.hasNextPage && !search.isFetching && !search.nextPageError,
+    root: scrollRoot,
+    rootMargin: '240px',
+  })
+
   if (search.status === 'idle') {
     return (
       <EmptyState
@@ -94,32 +102,53 @@ export function SearchResults({
       }
     >
       {(books) => (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
+          <p className="text-xs text-muted-foreground" aria-live="polite">
+            <span className="tabular-nums">{formatCount(books.length)}</span> de cerca de{' '}
+            <span className="tabular-nums">{formatCount(search.totalItems)}</span>{' '}
+            resultados
+          </p>
+
           <ul className={gridClass}>
             {books.map((book, index) => (
               <li
                 key={book.id}
                 className="animate-in fade-in slide-in-from-bottom-1 fill-mode-both duration-300 ease-out-quart motion-reduce:animate-none"
-                style={{ animationDelay: `${Math.min(index, 10) * 30}ms` }}
+                style={{ animationDelay: `${Math.min(index % BOOKS_PAGE_SIZE, 10) * 30}ms` }}
               >
                 <BookCard book={book} action={renderAction?.(book)} className="h-full" />
               </li>
             ))}
           </ul>
 
-          {search.pageCount > 1 ? (
-            <BookPagination
-              page={search.page}
-              pageCount={search.pageCount}
-              hasPreviousPage={search.hasPreviousPage}
-              hasNextPage={search.hasNextPage}
-              rangeStart={search.rangeStart}
-              rangeEnd={search.rangeEnd}
-              totalItems={search.totalItems}
-              onPageChange={onPageChange}
-              busy={search.isFetching}
-            />
-          ) : null}
+          {search.hasNextPage ? (
+            <div ref={sentinelRef} className="flex min-h-12 items-center justify-center py-2">
+              {search.isFetchingNextPage ? (
+                <Loader2
+                  aria-label="Carregando mais resultados"
+                  role="status"
+                  className="size-5 animate-spin text-muted-foreground"
+                />
+              ) : search.nextPageError ? (
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {search.nextPageError.message}
+                  </p>
+                  <Button type="button" variant="outline" size="sm" onClick={search.fetchNextPage}>
+                    Tentar de novo
+                  </Button>
+                </div>
+              ) : (
+                <Button type="button" variant="ghost" size="sm" onClick={search.fetchNextPage}>
+                  Carregar mais
+                </Button>
+              )}
+            </div>
+          ) : (
+            <p className="py-2 text-center text-xs text-muted-foreground">
+              Você chegou ao fim dos resultados.
+            </p>
+          )}
         </div>
       )}
     </AsyncBoundary>
