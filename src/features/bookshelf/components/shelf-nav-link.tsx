@@ -16,7 +16,7 @@ export function ShelfNavLink({ className }: ShelfNavLinkProps) {
       {count > 0 ? (
         <span
           key={count}
-          className="rounded-full bg-foreground/10 px-1.5 text-[0.7rem] tabular-nums duration-200 ease-spring animate-in zoom-in-75 motion-reduce:animate-none"
+          className="rounded-full bg-foreground/10 px-1.5 text-[0.7rem] tabular-nums pop-in"
         >
           {count}
         </span>

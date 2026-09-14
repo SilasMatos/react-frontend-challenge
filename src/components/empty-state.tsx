@@ -22,7 +22,7 @@ export function EmptyState({
       data-slot="empty-state"
       className={twMerge(
         'flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border px-6 py-14 text-center',
-        'animate-in fade-in duration-300 ease-out-quart motion-reduce:animate-none',
+        'enter-fade',
         className,
       )}
       {...props}

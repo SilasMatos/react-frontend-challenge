@@ -61,7 +61,7 @@ export function ShelfStatusSelect({
         size="sm"
         aria-label={ariaLabel}
         className={twMerge(
-          'w-fit gap-1 pr-1.5 pl-2 text-xs font-medium transition-[background-color,border-color] data-[size=sm]:rounded-full [&>svg:last-child]:size-3.5 [&>svg:last-child]:text-current [&>svg:last-child]:opacity-60',
+          'w-fit gap-1 pr-1.5 pl-2 text-xs font-medium transition-[background-color,border-color,box-shadow] hover-delay data-[size=sm]:rounded-full focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/40 [&>svg:last-child]:size-3.5 [&>svg:last-child]:text-current [&>svg:last-child]:opacity-60 [&>svg:last-child]:transition-transform data-[popup-open]:[&>svg:last-child]:rotate-180',
           current.pill,
           className,
         )}
@@ -75,7 +75,7 @@ export function ShelfStatusSelect({
                   key={selected}
                   aria-hidden
                   className={twMerge(
-                    'size-3.5 duration-200 ease-spring animate-in zoom-in-50 motion-reduce:animate-none',
+                    'size-3.5 pop-in',
                     accent,
                   )}
                 />
@@ -89,7 +89,11 @@ export function ShelfStatusSelect({
         {BOOK_STATUSES.map((status) => {
           const { icon: Icon, accent } = STATUS_STYLES[status]
           return (
-            <SelectItem key={status} value={status} className="py-1.5">
+            <SelectItem
+              key={status}
+              value={status}
+              className="py-1.5 data-selected:font-medium"
+            >
               <Icon aria-hidden className={twMerge('size-4', accent)} />
               {BOOK_STATUS_LABELS[status]}
             </SelectItem>

@@ -16,16 +16,24 @@ export interface ConfirmButtonProps
   onConfirm: () => void | Promise<void>
   onCancel?: () => void
   label: string
+  hint?: string
   confirmLabel?: string
   cancelLabel?: string
   icon?: ReactNode
   disabled?: boolean
 }
 
+const iconButtonClass =
+  'grid size-7 place-items-center rounded-md outline-none transition-[background-color,color,opacity,scale] duration-normal ease-out-quart hover-delay focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 motion-reduce:transition-none [&_svg]:size-4'
+
+const layerClass =
+  'col-start-1 row-start-1 transition-[opacity,scale] duration-slow ease-out-quart motion-reduce:transition-none'
+
 export function ConfirmButton({
   onConfirm,
   onCancel,
   label,
+  hint = label,
   confirmLabel = 'Confirmar',
   cancelLabel = 'Cancelar',
   icon,
@@ -36,6 +44,8 @@ export function ConfirmButton({
   const [phase, setPhase] = useState<Phase>('idle')
   const triggerRef = useRef<HTMLButtonElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
+  const restoreFocus = useRef(false)
+  const idle = phase === 'idle'
 
   function arm() {
     if (disabled) return
@@ -43,9 +53,9 @@ export function ConfirmButton({
   }
 
   const cancel = useCallback(() => {
+    restoreFocus.current = true
     setPhase('idle')
     onCancel?.()
-    triggerRef.current?.focus()
   }, [onCancel])
 
   async function confirm() {
@@ -58,7 +68,12 @@ export function ConfirmButton({
   }
 
   useEffect(() => {
-    if (phase === 'armed') cancelRef.current?.focus()
+    if (phase === 'armed') {
+      cancelRef.current?.focus()
+    } else if (phase === 'idle' && restoreFocus.current) {
+      restoreFocus.current = false
+      triggerRef.current?.focus()
+    }
   }, [phase])
 
   useEffect(() => {
@@ -74,47 +89,70 @@ export function ConfirmButton({
     <div
       data-slot="confirm-button"
       data-state={phase}
-      className={twMerge('inline-flex w-fit items-center rounded-lg p-0.5', className)}
+      className={twMerge(
+        'grid w-8 grid-cols-[minmax(0,1fr)] items-center justify-items-end overflow-hidden rounded-lg p-0.5 transition-[width] duration-slow ease-out-quart motion-reduce:transition-none',
+        !idle && 'w-16',
+        className,
+      )}
       {...props}
     >
-      {phase === 'idle' ? (
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={arm}
+        disabled={disabled || !idle}
+        aria-hidden={!idle}
+        aria-label={label}
+        title={idle ? hint : undefined}
+        className={twMerge(
+          iconButtonClass,
+          layerClass,
+          'text-muted-foreground hover:bg-muted hover:text-destructive',
+          !idle && 'pointer-events-none scale-75 opacity-0 disabled:opacity-0',
+        )}
+      >
+        {icon ?? <Trash2 />}
+      </button>
+
+      <div
+        role="group"
+        aria-label={`${label} — confirmar?`}
+        aria-hidden={idle}
+        className={twMerge(
+          layerClass,
+          'flex items-center gap-1',
+          idle && 'pointer-events-none scale-90 opacity-0',
+        )}
+      >
         <button
-          ref={triggerRef}
           type="button"
-          onClick={arm}
-          disabled={disabled}
-          aria-label={label}
-          className="grid size-7 place-items-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-4"
+          onClick={confirm}
+          disabled={phase !== 'armed'}
+          aria-label={confirmLabel}
+          title={confirmLabel}
+          className={twMerge(
+            iconButtonClass,
+            'bg-destructive/10 text-destructive hover:bg-destructive/20',
+          )}
         >
-          {icon ?? <Trash2 />}
+          {phase === 'pending' ? <Loader2 className="animate-spin" /> : <Check />}
         </button>
-      ) : (
-        <div
-          role="group"
-          aria-label={`${label} — confirmar?`}
-          className="flex items-center gap-1 duration-150 ease-out-quart animate-in fade-in zoom-in-95 motion-reduce:animate-none"
+        <button
+          ref={cancelRef}
+          type="button"
+          onClick={cancel}
+          disabled={phase !== 'armed'}
+          aria-label={cancelLabel}
+          title={cancelLabel}
+          className={twMerge(
+            iconButtonClass,
+            'text-muted-foreground hover:bg-muted hover:text-foreground',
+          )}
         >
-          <button
-            type="button"
-            onClick={confirm}
-            disabled={phase === 'pending'}
-            aria-label={confirmLabel}
-            className="grid size-7 place-items-center rounded-md bg-destructive/10 text-destructive outline-none hover:bg-destructive/20 focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 [&_svg]:size-4"
-          >
-            {phase === 'pending' ? <Loader2 className="animate-spin" /> : <Check />}
-          </button>
-          <button
-            ref={cancelRef}
-            type="button"
-            onClick={cancel}
-            disabled={phase === 'pending'}
-            aria-label={cancelLabel}
-            className="grid size-7 place-items-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 [&_svg]:size-4"
-          >
-            <X />
-          </button>
-        </div>
-      )}
+          <X />
+        </button>
+      </div>
+
       <output aria-live="polite" className="sr-only">
         {phase === 'armed' ? `${label} — confirmar?` : ''}
       </output>

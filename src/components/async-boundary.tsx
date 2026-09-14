@@ -62,7 +62,7 @@ export function AsyncBoundary<T>({
       data-phase={phase}
       aria-busy={phase === 'pending' || undefined}
       className={twMerge(
-        'duration-200 ease-out-quart animate-in fade-in motion-reduce:animate-none',
+        'enter-fade duration-normal',
         className,
       )}
     >

@@ -1,31 +1,52 @@
-import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useEffect, useState, type MouseEvent } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react'
 import {
   createColumnHelper,
+  createPaginatedRowModel,
   createSortedRowModel,
+  rowPaginationFeature,
   rowSortingFeature,
   tableFeatures,
   useTable,
+  type PaginationState,
   type SortDirection,
   type SortingState,
 } from '@tanstack/react-table'
 import { twMerge } from 'tailwind-merge'
 import { ConfirmButton } from '@/components/confirm-button'
 import { BookCover } from '@/components/book-cover'
-import { formatPublishedDate } from '@/utils/format-date'
+import { formatPublishedYear } from '@/utils/format-date'
 import { normalizeText } from '@/utils/normalize-text'
 import { useBookshelf } from '../hooks/use-bookshelf'
 import { useShelfToast } from '../hooks/use-shelf-toast'
 import { BOOK_STATUS_ORDER, type BookshelfItem } from '../types/bookshelf'
+import { BookshelfPagination } from './bookshelf-pagination'
 import { ShelfStatusSelect } from './shelf-status-select'
+
+export const BOOKSHELF_PAGE_SIZE = 10
 
 const features = tableFeatures({
   rowSortingFeature,
+  rowPaginationFeature,
   sortedRowModel: createSortedRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
 })
 
 const helper = createColumnHelper<typeof features, BookshelfItem>()
+
+const COLUMN_CLASS: Record<string, string> = {
+  cover: 'w-[4.5rem] pr-0',
+  title: '',
+  authors: 'hidden w-[26%] md:table-cell',
+  publishedDate: 'hidden w-24 sm:table-cell',
+  status: 'w-[8rem] sm:w-[9.5rem]',
+  actions: 'w-14 pl-0 text-right',
+}
+
+function authorsOf(item: BookshelfItem): string {
+  return item.book.authors.join(', ')
+}
 
 const columns = helper.columns([
   helper.display({
@@ -42,25 +63,40 @@ const columns = helper.columns([
   helper.accessor((item) => normalizeText(item.book.title), {
     id: 'title',
     header: 'Título',
-    cell: ({ row }) => (
-      <Link
-        to="/book/$bookId"
-        params={{ bookId: row.original.book.id }}
-        className="font-medium text-foreground underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        {row.original.book.title}
-      </Link>
-    ),
+    cell: ({ row }) => {
+      const authors = authorsOf(row.original)
+      return (
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <Link
+            to="/book/$bookId"
+            params={{ bookId: row.original.book.id }}
+            title={row.original.book.title}
+            className="line-clamp-2 max-w-[36ch] rounded-sm text-[0.9rem] leading-snug font-semibold break-words text-foreground underline-offset-3 outline-none group-hover/row:underline focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {row.original.book.title}
+          </Link>
+          <span className="truncate text-xs text-muted-foreground md:hidden">
+            {authors || 'Autor desconhecido'}
+          </span>
+        </div>
+      )
+    },
   }),
-  helper.accessor((item) => item.book.authors.join(', '), {
+  helper.accessor(authorsOf, {
     id: 'authors',
     header: 'Autor',
     enableSorting: false,
-    cell: ({ getValue }) => (
-      <span className="text-muted-foreground">
-        {getValue() || 'Autor desconhecido'}
-      </span>
-    ),
+    cell: ({ getValue }) => {
+      const authors = getValue()
+      return (
+        <span
+          title={authors || undefined}
+          className="block max-w-[24ch] truncate text-muted-foreground"
+        >
+          {authors || 'Autor desconhecido'}
+        </span>
+      )
+    },
   }),
   helper.accessor((item) => item.book.publishedDate ?? '', {
     id: 'publishedDate',
@@ -68,7 +104,7 @@ const columns = helper.columns([
     enableSorting: false,
     cell: ({ row }) => (
       <span className="tabular-nums text-muted-foreground">
-        {formatPublishedDate(row.original.book.publishedDate)}
+        {formatPublishedYear(row.original.book.publishedDate)}
       </span>
     ),
   }),
@@ -96,72 +132,133 @@ export interface BookshelfTableProps {
 }
 
 export function BookshelfTable({ items }: BookshelfTableProps) {
+  const navigate = useNavigate()
   const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: BOOKSHELF_PAGE_SIZE,
+  })
 
   const table = useTable({
     features,
     columns,
     data: items,
     getRowId: (item) => item.book.id,
-    state: { sorting },
-    onSortingChange: setSorting,
+    state: { sorting, pagination },
+    onSortingChange: (updater) => {
+      setSorting(updater)
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+    },
+    onPaginationChange: setPagination,
+    autoResetPageIndex: false,
   })
 
-  return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-background">
-      <table className="w-full min-w-[720px] border-collapse text-sm">
-        <caption className="sr-only">Livros salvos na sua estante</caption>
-        <thead>
-          {table.getHeaderGroups().map((group) => (
-            <tr key={group.id} className="border-b border-border bg-muted/40">
-              {group.headers.map((header) => {
-                const canSort = header.column.getCanSort()
-                const sorted = header.column.getIsSorted()
+  const pageCount = table.getPageCount()
+  const lastPageIndex = Math.max(pageCount - 1, 0)
 
-                return (
-                  <th
-                    key={header.id}
-                    scope="col"
-                    aria-sort={canSort ? ARIA_SORT[String(sorted)] : undefined}
-                    className="px-3 py-2.5 text-left font-medium text-muted-foreground"
-                  >
-                    {header.isPlaceholder ? null : canSort ? (
-                      <button
-                        type="button"
-                        onClick={header.column.getToggleSortingHandler()}
-                        className="-mx-1 inline-flex items-center gap-1 rounded px-1 py-0.5 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                      >
+  useEffect(() => {
+    if (pagination.pageIndex > lastPageIndex) {
+      setPagination((prev) => ({ ...prev, pageIndex: lastPageIndex }))
+    }
+  }, [pagination.pageIndex, lastPageIndex])
+
+  const firstRow = pagination.pageIndex * pagination.pageSize + 1
+  const lastRow = Math.min(firstRow + pagination.pageSize - 1, items.length)
+
+  function openBook(event: MouseEvent<HTMLTableRowElement>, item: BookshelfItem) {
+    const target = event.target as HTMLElement
+    if (!event.currentTarget.contains(target)) return
+    if (target.closest('a, button, [role="combobox"], [data-slot="confirm-button"]')) return
+    if (window.getSelection()?.toString()) return
+    void navigate({ to: '/book/$bookId', params: { bookId: item.book.id } })
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="overflow-x-auto rounded-lg border border-border bg-background">
+        <table className="w-full table-fixed border-collapse text-sm">
+          <caption className="sr-only">Livros salvos na sua estante</caption>
+          <thead>
+            {table.getHeaderGroups().map((group) => (
+              <tr key={group.id} className="border-b border-border bg-muted/50">
+                {group.headers.map((header) => {
+                  const canSort = header.column.getCanSort()
+                  const sorted = header.column.getIsSorted()
+
+                  return (
+                    <th
+                      key={header.id}
+                      scope="col"
+                      aria-sort={
+                        canSort ? ARIA_SORT[String(sorted)] : undefined
+                      }
+                      className={twMerge(
+                        'h-10 px-3 text-left text-xs font-medium text-muted-foreground',
+                        COLUMN_CLASS[header.column.id],
+                      )}
+                    >
+                      {header.isPlaceholder ? null : canSort ? (
+                        <button
+                          type="button"
+                          data-sorted={sorted || undefined}
+                          onClick={header.column.getToggleSortingHandler()}
+                          className="group/sort -mx-1.5 inline-flex h-7 items-center gap-1 rounded-md px-1.5 outline-none transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-sorted:text-foreground"
+                        >
+                          <table.FlexRender header={header} />
+                          <SortIndicator direction={sorted} />
+                        </button>
+                      ) : (
                         <table.FlexRender header={header} />
-                        <SortIndicator direction={sorted} />
-                      </button>
-                    ) : (
-                      <table.FlexRender header={header} />
+                      )}
+                    </th>
+                  )
+                })}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <tr
+                key={row.id}
+                onClick={(event) => openBook(event, row.original)}
+                className={twMerge(
+                  'group/row cursor-pointer border-b border-border transition-[opacity,background-color] duration-normal last:border-0 hover:bg-muted/40',
+                  'has-[[data-removing]]:pointer-events-none has-[[data-removing]]:opacity-40',
+                  'motion-reduce:transition-none',
+                )}
+              >
+                {row.getAllCells().map((cell) => (
+                  <td
+                    key={cell.id}
+                    className={twMerge(
+                      'h-20 px-3 py-2 align-middle',
+                      COLUMN_CLASS[cell.column.id],
                     )}
-                  </th>
-                )
-              })}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.id}
-              className={twMerge(
-                'border-b border-border transition-[opacity,background-color] duration-200 ease-out last:border-0 hover:bg-muted/30',
-                'has-[[data-removing]]:pointer-events-none has-[[data-removing]]:opacity-40',
-                'motion-reduce:transition-none',
-              )}
-            >
-              {row.getAllCells().map((cell) => (
-                <td key={cell.id} className="px-3 py-2 align-middle">
-                  <table.FlexRender cell={cell} />
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  >
+                    <table.FlexRender cell={cell} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {pageCount > 1 ? (
+        <footer className="flex flex-wrap items-center justify-between gap-3 px-1">
+          <p className="text-xs text-muted-foreground" aria-live="polite">
+            <span className="tabular-nums">
+              {firstRow}–{lastRow}
+            </span>{' '}
+            de <span className="tabular-nums">{items.length}</span> livros
+          </p>
+          <BookshelfPagination
+            pageIndex={pagination.pageIndex}
+            pageCount={pageCount}
+            onPageChange={(pageIndex) => table.setPageIndex(pageIndex)}
+          />
+        </footer>
+      ) : null}
     </div>
   )
 }
@@ -179,8 +276,10 @@ function SortIndicator({ direction }: { direction: false | SortDirection }) {
       key={String(direction)}
       aria-hidden
       className={twMerge(
-        'size-3.5 duration-150 animate-in fade-in motion-reduce:animate-none',
-        direction ? 'text-foreground' : 'text-muted-foreground/50',
+        'size-3.5 enter-fade duration-fast transition-colors',
+        direction
+          ? 'text-foreground'
+          : 'text-muted-foreground/40 group-hover/sort:text-muted-foreground',
       )}
     />
   )
@@ -211,6 +310,7 @@ function StatusCell({ item }: { item: BookshelfItem }) {
         value={item.status}
         onChange={handleChange}
         ariaLabel={`Status de ${item.book.title}`}
+        className="w-fit sm:w-[7.5rem]"
       />
     </div>
   )
@@ -236,6 +336,7 @@ function ActionsCell({ item }: { item: BookshelfItem }) {
         disabled={removing}
         data-removing={removing ? '' : undefined}
         label={`Remover ${item.book.title} da estante`}
+        hint="Remover da estante"
         confirmLabel="Confirmar remoção"
         cancelLabel="Cancelar remoção"
       />

@@ -113,7 +113,7 @@ export function SearchResults({
             {books.map((book, index) => (
               <li
                 key={book.id}
-                className="animate-in fade-in slide-in-from-bottom-1 fill-mode-both duration-300 ease-out-quart motion-reduce:animate-none"
+                className="enter-rise"
                 style={{ animationDelay: `${Math.min(index % BOOKS_PAGE_SIZE, 10) * 30}ms` }}
               >
                 <BookCard book={book} action={renderAction?.(book)} className="h-full" />

@@ -24,7 +24,7 @@ export function ThemeToggle(props: ThemeToggleProps) {
     >
       <span
         key={theme}
-        className="inline-flex animate-in zoom-in-50 spin-in-45 duration-300 ease-out-quart motion-reduce:animate-none"
+        className="inline-flex pop-in spin-in-45 duration-slow"
       >
         {theme === 'dark' ? <Sun /> : <Moon />}
       </span>

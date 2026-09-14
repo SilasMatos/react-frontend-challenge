@@ -14,7 +14,7 @@ export function AppHeader({ nav, actions, className, ...props }: AppHeaderProps)
     <header
       data-slot="app-header"
       className={twMerge(
-        'sticky top-0 z-10 flex h-(--header-height) items-center justify-between gap-3 bg-background/80 px-4 backdrop-blur-sm duration-500 ease-out-quart animate-in fade-in slide-in-from-top-2 motion-reduce:animate-none sm:px-6',
+        'sticky top-0 z-10 flex h-(--header-height) items-center justify-between gap-3 bg-background/80 px-4 backdrop-blur-sm enter-drop sm:px-6',
         className,
       )}
       {...props}
@@ -23,7 +23,7 @@ export function AppHeader({ nav, actions, className, ...props }: AppHeaderProps)
         <Link
           to="/"
           activeOptions={{ exact: true, includeSearch: false }}
-          className="rounded-sm outline-none transition-all duration-300 ease-out-quart hover:tracking-wider hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+          className="rounded-sm outline-none transition-all duration-slow hover:tracking-wider hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Logo />
         </Link>

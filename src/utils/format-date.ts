@@ -41,3 +41,8 @@ export function getPublishedYear(
   const year = Number(rawYear)
   return rawYear.length === 4 && Number.isInteger(year) ? year : null
 }
+
+export function formatPublishedYear(value: string | null | undefined): string {
+  const year = getPublishedYear(value)
+  return year == null ? '—' : String(year)
+}

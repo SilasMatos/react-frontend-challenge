@@ -3,6 +3,10 @@ import { tv, type VariantProps } from 'tailwind-variants'
 import { twMerge } from 'tailwind-merge'
 import { CoverImage, type CoverImageProps } from '@/components/cover-image'
 import type { Book } from '@/types/book'
+import {
+  isGoogleBooksPlaceholder,
+  sanitizeCoverUrl,
+} from '@/utils/sanitize-cover-url'
 
 const cover = tv({
   base: 'shrink-0 border border-border',
@@ -18,7 +22,10 @@ const cover = tv({
 })
 
 export interface BookCoverProps
-  extends Omit<CoverImageProps, 'src' | 'alt' | 'sanitize' | 'fallback'>,
+  extends Omit<
+      CoverImageProps,
+      'src' | 'fallbackSrc' | 'alt' | 'sanitize' | 'reject' | 'fallback'
+    >,
     VariantProps<typeof cover> {
   book: Pick<Book, 'title' | 'thumbnail'>
 }
@@ -32,12 +39,18 @@ export function BookCover({
   className,
   ...props
 }: BookCoverProps) {
+  const sharp = book.thumbnail ? sanitizeCoverUrl(book.thumbnail) : null
+  const original = book.thumbnail
+    ? sanitizeCoverUrl(book.thumbnail, { upgradeZoom: false })
+    : null
+
   return (
     <CoverImage
       data-slot="book-cover"
-      src={book.thumbnail}
+      src={sharp}
+      fallbackSrc={original}
+      reject={isGoogleBooksPlaceholder}
       alt={`Capa de ${book.title}`}
-      sanitize
       ratio={ratio}
       radius={radius}
       fit={fit}

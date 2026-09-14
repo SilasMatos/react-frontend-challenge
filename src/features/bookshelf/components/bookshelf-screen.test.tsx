@@ -169,6 +169,105 @@ describe('BookshelfScreen (rota /estante)', () => {
     expect(screen.queryByRole('link', { name: 'Clean Code' })).not.toBeInTheDocument()
   })
 
+  it('pagina a tabela em blocos de 10 e mantém a ordenação entre páginas', async () => {
+    const user = userEvent.setup()
+    const many = Array.from({ length: 12 }, (_, index) =>
+      item(`id-${index}`, `Livro ${String(index + 1).padStart(2, '0')}`, 'reading', index),
+    )
+    useBookshelfStore.setState({ items: many })
+    renderRoute('/estante')
+
+    await screen.findByRole('link', { name: 'Livro 01' })
+    expect(rowTitles()).toHaveLength(10)
+    expect(screen.getByText('1–10')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Livro 11' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Próxima página' }))
+
+    expect(rowTitles()).toEqual(['Livro 11', 'Livro 12'])
+    expect(screen.getByText('11–12')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page')
+
+    await user.click(screen.getByRole('button', { name: 'Título' }))
+    await user.click(screen.getByRole('button', { name: 'Título' }))
+
+    expect(rowTitles()[0]).toBe('Livro 12')
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('volta para a última página existente ao remover os itens da página atual', async () => {
+    const user = userEvent.setup()
+    const many = Array.from({ length: 11 }, (_, index) =>
+      item(`id-${index}`, `Livro ${String(index + 1).padStart(2, '0')}`, 'reading', index),
+    )
+    useBookshelfStore.setState({ items: many })
+    renderRoute('/estante')
+
+    await user.click(await screen.findByRole('button', { name: 'Próxima página' }))
+    expect(rowTitles()).toEqual(['Livro 11'])
+
+    await user.click(screen.getByRole('button', { name: 'Remover Livro 11 da estante' }))
+    await user.click(await screen.findByRole('button', { name: 'Confirmar remoção' }))
+
+    await waitFor(() => expect(rowTitles()).toHaveLength(10))
+    expect(screen.queryByRole('navigation', { name: 'Paginação da estante' })).not.toBeInTheDocument()
+  })
+
+  it('expõe título e autores completos no tooltip das células truncadas', async () => {
+    const longTitle =
+      'The Pragmatic Programmer: Your Journey to Mastery, 20th Anniversary Edition with a Very Long Subtitle'
+    const book = { ...makeBook('long', longTitle), authors: ['Erich Gamma', 'Richard Helm', 'Ralph Johnson', 'John Vlissides'] }
+    useBookshelfStore.setState({ items: [{ book, status: 'reading', addedAt: 0 }] })
+    renderRoute('/estante')
+
+    const link = await screen.findByRole('link', { name: longTitle })
+    expect(link).toHaveAttribute('title', longTitle)
+    expect(link).toHaveClass('line-clamp-2')
+
+    const authors = screen.getByTitle('Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides')
+    expect(authors).toHaveClass('truncate')
+  })
+
+  it('mostra só o ano na coluna Publicação e "—" quando não há data', async () => {
+    useBookshelfStore.setState({
+      items: [
+        { book: { ...makeBook('y1', 'Com data'), publishedDate: '1872-03-15' }, status: 'read', addedAt: 0 },
+        { book: { ...makeBook('y2', 'Só ano'), publishedDate: '2023' }, status: 'read', addedAt: 1 },
+        { book: { ...makeBook('y3', 'Sem data'), publishedDate: null }, status: 'read', addedAt: 2 },
+      ],
+    })
+    renderRoute('/estante')
+
+    await screen.findByRole('link', { name: 'Com data' })
+    const cells = screen.getAllByRole('cell').map((cell) => cell.textContent)
+    expect(cells).toContain('1872')
+    expect(cells).toContain('2023')
+    expect(cells).toContain('—')
+    expect(cells.join(' ')).not.toContain('março')
+  })
+
+  it('abre o detalhe ao clicar na linha, mas não ao usar status ou remover', async () => {
+    const user = userEvent.setup()
+    useBookshelfStore.setState({ items: [SEED[1]] })
+    renderRoute('/estante')
+
+    const row = (await screen.findByRole('link', { name: 'Clean Code' })).closest('tr')!
+
+    await user.click(screen.getByRole('button', { name: 'Remover Clean Code da estante' }))
+    expect(screen.getByRole('heading', { name: 'Minha estante' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Cancelar remoção' }))
+
+    await user.click(screen.getByRole('combobox', { name: 'Status de Clean Code' }))
+    await user.click(within(await screen.findByRole('listbox')).getByRole('option', { name: 'Lendo' }))
+    expect(useBookshelfStore.getState().items[0].status).toBe('reading')
+    expect(screen.getByRole('heading', { name: 'Minha estante' })).toBeInTheDocument()
+
+    await user.click(within(row).getAllByText('Autora X')[0])
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'Minha estante' })).not.toBeInTheDocument(),
+    )
+  })
+
   it('cancela a remoção ao clicar em cancelar', async () => {
     const user = userEvent.setup()
     useBookshelfStore.setState({ items: SEED })

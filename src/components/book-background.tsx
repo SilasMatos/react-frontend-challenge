@@ -12,6 +12,7 @@ export function BookBackground({ className, ...props }: BookBackgroundProps) {
     fadeRight: `${id}-fade-right`,
     fadeTop: `${id}-fade-top`,
     fadeBottom: `${id}-fade-bottom`,
+    glow: `${id}-glow`,
   }
 
   return (
@@ -27,21 +28,21 @@ export function BookBackground({ className, ...props }: BookBackgroundProps) {
       <defs>
         <pattern
           id={ids.dots}
-          width="18"
-          height="18"
+          width="22"
+          height="22"
           patternUnits="userSpaceOnUse"
         >
-          <circle cx="9" cy="9" r="1" fill="currentColor" />
+          <circle cx="11" cy="11" r="0.9" fill="currentColor" />
         </pattern>
 
         <linearGradient id={ids.fadeLeft} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="white" />
-          <stop offset="0.45" stopColor="white" stopOpacity="0.55" />
+          <stop offset="0.35" stopColor="white" stopOpacity="0.6" />
           <stop offset="1" stopColor="white" stopOpacity="0" />
         </linearGradient>
         <linearGradient id={ids.fadeRight} x1="1" y1="0" x2="0" y2="0">
           <stop offset="0" stopColor="white" />
-          <stop offset="0.45" stopColor="white" stopOpacity="0.55" />
+          <stop offset="0.35" stopColor="white" stopOpacity="0.6" />
           <stop offset="1" stopColor="white" stopOpacity="0" />
         </linearGradient>
         <linearGradient id={ids.fadeTop} x1="0" y1="0" x2="0" y2="1">
@@ -53,15 +54,26 @@ export function BookBackground({ className, ...props }: BookBackgroundProps) {
           <stop offset="1" stopColor="black" stopOpacity="0" />
         </linearGradient>
 
+        <radialGradient id={ids.glow}>
+          <stop offset="0" stopColor="currentColor" stopOpacity="0.12" />
+          <stop offset="0.6" stopColor="currentColor" stopOpacity="0.04" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+        </radialGradient>
+
         <mask id={ids.mask}>
-          <rect x="0" y="0" width="480" height="800" fill={`url(#${ids.fadeLeft})`} />
-          <rect x="960" y="0" width="480" height="800" fill={`url(#${ids.fadeRight})`} />
-          <rect x="0" y="0" width="1440" height="110" fill={`url(#${ids.fadeTop})`} />
-          <rect x="0" y="690" width="1440" height="110" fill={`url(#${ids.fadeBottom})`} />
+          <rect x="0" y="0" width="420" height="800" fill={`url(#${ids.fadeLeft})`} />
+          <rect x="1020" y="0" width="420" height="800" fill={`url(#${ids.fadeRight})`} />
+          <rect x="0" y="0" width="1440" height="140" fill={`url(#${ids.fadeTop})`} />
+          <rect x="0" y="660" width="1440" height="140" fill={`url(#${ids.fadeBottom})`} />
         </mask>
       </defs>
 
-      <g className="opacity-35 dark:opacity-28">
+      <g className="opacity-90 dark:opacity-70">
+        <circle cx="96" cy="700" r="380" fill={`url(#${ids.glow})`} />
+        <circle cx="1350" cy="150" r="340" fill={`url(#${ids.glow})`} />
+      </g>
+
+      <g className="opacity-30 dark:opacity-22">
         <rect
           x="0"
           y="0"
@@ -73,22 +85,20 @@ export function BookBackground({ className, ...props }: BookBackgroundProps) {
       </g>
 
       <g
-        className="opacity-55 **:[vector-effect:non-scaling-stroke] dark:opacity-45"
+        className="opacity-50 **:[vector-effect:non-scaling-stroke] dark:opacity-40"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.25"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <Bookmark transform="translate(100 120)" />
-        <StackedBooks transform="translate(24 268)" />
-        <PageLines transform="translate(60 420)" />
-        <StandingBooks transform="translate(14 668)" />
+        <Bookmark transform="translate(112 92) scale(1.1)" />
+        <StandingBooks transform="translate(22 362) scale(0.95)" />
+        <OpenBook transform="translate(98 722) scale(1.35)" opacity={0.6} />
 
-        <StandingBooks transform="translate(1318 290)" />
-        <PageLines transform="translate(1350 396)" />
-        <OpenBook transform="translate(1372 552)" />
-        <StackedBooks transform="translate(1312 706)" />
+        <StackedBooks transform="translate(1318 184) scale(1.05)" />
+        <Glasses transform="translate(1372 336) scale(1.1)" />
+        <StandingBooks transform="translate(1320 566) scale(0.9)" />
       </g>
     </svg>
   )
@@ -96,53 +106,68 @@ export function BookBackground({ className, ...props }: BookBackgroundProps) {
 
 interface GlyphProps {
   transform: string
+  opacity?: number
 }
 
-function StandingBooks({ transform }: GlyphProps) {
+function StandingBooks({ transform, opacity }: GlyphProps) {
   return (
-    <g transform={transform}>
-      <path d="M-14 0H112" />
-      <rect x="0" y="-86" width="16" height="86" rx="2" />
-      <rect x="21" y="-104" width="20" height="104" rx="2" />
-      <rect x="46" y="-78" width="14" height="78" rx="2" />
-      <path d="M72 0H88L74 -94H58Z" />
-      <path d="M5 -70H11M5 -64H11" />
-      <path d="M27 -88H35M27 -82H35" />
+    <g transform={transform} opacity={opacity}>
+      <path d="M-16 0H122" />
+      <rect x="0" y="-84" width="16" height="84" rx="2" />
+      <path d="M5 -66H11M5 -60H11" />
+      <rect x="20" y="-100" width="22" height="100" rx="2" />
+      <path d="M20 -86H42M20 -80H42" />
+      <rect x="46" y="-76" width="14" height="76" rx="2" />
       <path d="M50 -60H56" />
+      <path d="M72 0H88L74 -94H58Z" />
+      <path d="M63 -60H79" />
     </g>
   )
 }
 
-function StackedBooks({ transform }: GlyphProps) {
+function StackedBooks({ transform, opacity }: GlyphProps) {
   return (
-    <g transform={transform}>
+    <g transform={transform} opacity={opacity}>
       <rect x="0" y="-18" width="100" height="18" rx="3" />
-      <rect x="-4" y="-34" width="122" height="16" rx="3" />
-      <rect x="4" y="-52" width="104" height="18" rx="3" />
-      <rect x="12" y="-66" width="86" height="14" rx="3" />
-      <path d="M12 -14V-4" />
-      <path d="M16 -47V-39" />
-      <path d="M104 -18V-2L110 -8L116 -2V-18" />
+      <path d="M8 -13V-5" />
+      <rect x="6" y="-34" width="92" height="16" rx="3" />
+      <path d="M90 -30V-22" />
+      <rect x="2" y="-52" width="98" height="18" rx="3" />
+      <path d="M10 -47V-39" />
+      <rect x="14" y="-66" width="80" height="14" rx="3" />
     </g>
   )
 }
 
-function OpenBook({ transform }: GlyphProps) {
+function OpenBook({ transform, opacity }: GlyphProps) {
   return (
-    <g transform={transform}>
-      <path d="M0 0C-20 -8 -42 -9 -62 -3V-46C-42 -52 -20 -51 0 -43Z" />
-      <path d="M0 0C20 -8 42 -9 62 -3V-46C42 -52 20 -51 0 -43Z" />
-      <path d="M0 0V-43" />
-      <path d="M-48 -34C-36 -38 -24 -38 -12 -35M-48 -24C-36 -28 -24 -28 -12 -25" />
-      <path d="M12 -35C24 -38 36 -38 48 -34M12 -25C24 -28 36 -28 48 -24" />
+    <g transform={transform} opacity={opacity}>
+      <path d="M-66 -4C-44 2 -22 3 0 -1C22 3 44 2 66 -4" />
+      <path d="M0 -1C-20 -9 -42 -10 -62 -4V-47C-42 -53 -20 -52 0 -44Z" />
+      <path d="M0 -1C20 -9 42 -10 62 -4V-47C42 -53 20 -52 0 -44Z" />
+      <path d="M0 -1V-44" />
+      <path d="M-48 -36C-36 -40 -24 -40 -12 -37M-48 -26C-36 -30 -24 -30 -12 -27" />
+      <path d="M12 -37C24 -40 36 -40 48 -36M12 -27C24 -30 36 -30 48 -26" />
     </g>
   )
 }
 
-function PageLines({ transform }: GlyphProps) {
-  return <path transform={transform} d="M0 0H64M0 11H44M0 22H56M0 33H32" />
+function Glasses({ transform, opacity }: GlyphProps) {
+  return (
+    <g transform={transform} opacity={opacity}>
+      <circle cx="-15" cy="0" r="11" />
+      <circle cx="15" cy="0" r="11" />
+      <path d="M-4 -2C-2 -5 2 -5 4 -2" />
+      <path d="M-26 -3L-38 -10M26 -3L38 -10" />
+    </g>
+  )
 }
 
-function Bookmark({ transform }: GlyphProps) {
-  return <path transform={transform} d="M0 0H18V46L9 38L0 46Z" />
+function Bookmark({ transform, opacity }: GlyphProps) {
+  return (
+    <g transform={transform} opacity={opacity}>
+      <path d="M0 0H20V48L10 40L0 48Z" />
+      <path d="M6 10H14" />
+    </g>
+  )
 }

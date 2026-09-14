@@ -55,14 +55,14 @@ export function Skel({
       data-slot="skel"
       data-loading={loading || undefined}
       className={twMerge(
-        'relative inline-block overflow-hidden rounded-md align-middle',
+        'relative inline-block align-middle data-loading:overflow-hidden data-loading:rounded-md',
         className,
       )}
       {...props}
     >
       <span
         className={twMerge(
-          'block h-full transition-opacity duration-200 ease-out-quart',
+          'block h-full transition-opacity duration-normal',
           loading ? 'opacity-0' : 'opacity-100',
         )}
         aria-hidden={loading || undefined}
@@ -72,7 +72,7 @@ export function Skel({
       <span
         aria-hidden="true"
         className={twMerge(
-          'pointer-events-none absolute inset-0 rounded-[inherit] bg-foreground/10 transition-opacity duration-200 ease-out-quart',
+          'pointer-events-none absolute inset-0 rounded-[inherit] bg-foreground/10 transition-opacity duration-normal',
           loading ? 'animate-pulse opacity-100' : 'opacity-0',
         )}
       />

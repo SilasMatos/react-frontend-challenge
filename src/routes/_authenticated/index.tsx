@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { BookBackground } from '@/components/book-background'
 import { DiscoveryScreen, PRINT_TYPES, SORT_ORDERS } from '@/features/books'
-import { ShelfToggleButton } from '@/features/bookshelf'
+import { ShelfBookmarkButton } from '@/features/bookshelf'
 
 const discoverySearchSchema = z.object({
   q: z.string().trim().min(1).optional().catch(undefined),
@@ -45,7 +45,7 @@ function DiscoveryRoute() {
             replace: true,
           })
         }
-        renderAction={(book) => <ShelfToggleButton book={book} />}
+        renderAction={(book) => <ShelfBookmarkButton book={book} />}
       />
     </div>
   )

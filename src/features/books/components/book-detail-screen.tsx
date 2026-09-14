@@ -30,7 +30,7 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
   const { book, isLoading, isError, error, refetch } = useBook(bookId)
 
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 duration-300 ease-out-quart animate-in fade-in motion-reduce:animate-none sm:px-6">
+    <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 enter-fade sm:px-6">
       {backLink}
 
       {isError ? (
@@ -47,7 +47,7 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
       ) : (
         <SkeletonMorph
           loading={isLoading}
-          className="flex flex-col gap-6 duration-300 ease-out-quart animate-in fade-in motion-reduce:animate-none sm:flex-row sm:gap-8"
+          className="flex flex-col gap-6 enter-fade sm:flex-row sm:gap-8"
         >
           <Skel
             as="div"
@@ -67,7 +67,7 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
           <div className="flex min-w-0 flex-1 flex-col gap-4">
             <header className="flex flex-col gap-1.5">
               <h1 className="text-2xl font-semibold tracking-tight text-balance">
-                <Skel as="span" className="inline-block h-7 w-64 max-w-full">
+                <Skel as="span" className="max-w-full data-loading:h-7 data-loading:w-64">
                   {book?.title}
                 </Skel>
               </h1>
@@ -75,7 +75,7 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
                 <p className="text-base text-muted-foreground">{book.subtitle}</p>
               ) : null}
               <p className="text-sm text-foreground">
-                <Skel as="span" className="inline-block h-4 w-40 max-w-full">
+                <Skel as="span" className="max-w-full data-loading:h-4 data-loading:w-40">
                   {book
                     ? book.authors.length > 0
                       ? book.authors.join(', ')
@@ -110,7 +110,7 @@ export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps
               </ul>
             ) : null}
 
-            <Skel as="div" className="h-24 w-full">
+            <Skel as="div" className="w-full data-loading:h-24">
               {book ? (
                 book.description ? (
                   <p className="text-sm leading-relaxed whitespace-pre-line text-foreground/90">
@@ -172,7 +172,7 @@ function Meta({ label, value }: { label: string; value: string | null }) {
     <div className="flex flex-col">
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className="text-foreground">
-        <Skel as="span" className="inline-block h-4 w-20 max-w-full">
+        <Skel as="span" className="max-w-full data-loading:h-4 data-loading:w-20">
           {value ?? '—'}
         </Skel>
       </dd>

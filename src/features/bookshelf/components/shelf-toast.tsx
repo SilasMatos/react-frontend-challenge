@@ -51,7 +51,7 @@ export function ShelfToast({ toastId, kind, book, onUndo }: ShelfToastProps) {
       <div className="flex min-w-0 flex-1 flex-col">
         <p className="flex items-center gap-1.5 text-sm leading-5 font-medium">
           <Icon
-            className="size-4 shrink-0 duration-300 ease-spring animate-in zoom-in-50 motion-reduce:animate-none"
+            className="size-4 shrink-0 pop-in duration-slow"
             aria-hidden
           />
           {title}

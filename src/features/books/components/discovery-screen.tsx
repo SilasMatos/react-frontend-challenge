@@ -59,7 +59,7 @@ export function DiscoveryScreen({
   }
 
   return (
-    <main className="mx-auto flex h-[calc(100dvh-var(--header-height))] max-w-6xl flex-col gap-6 px-4 pt-8 duration-300 ease-out-quart animate-in fade-in motion-reduce:animate-none sm:px-6">
+    <main className="mx-auto flex h-[calc(100dvh-var(--header-height))] max-w-6xl flex-col gap-6 px-4 pt-8 enter-fade sm:px-6">
       <header className="flex shrink-0 flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">Descobrir livros</h1>
         <p className="text-sm text-muted-foreground">
