@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type { Book } from '@/types/book'
-import { toBook } from '../mappers/book-mapper'
-import { booksKeys } from '../query-keys'
-import { getVolume } from '../services/books-service'
+import { bookQueryOptions } from './book-query'
 
 export interface UseBookResult {
   book: Book | undefined
@@ -14,8 +12,7 @@ export interface UseBookResult {
 
 export function useBook(bookId: string): UseBookResult {
   const result = useQuery({
-    queryKey: booksKeys.detail(bookId),
-    queryFn: async ({ signal }) => toBook(await getVolume(bookId, signal)),
+    ...bookQueryOptions(bookId),
     enabled: bookId.length > 0,
   })
 

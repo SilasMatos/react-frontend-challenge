@@ -90,7 +90,7 @@ export function ConfirmButton({
       data-slot="confirm-button"
       data-state={phase}
       className={twMerge(
-        'grid w-8 grid-cols-[minmax(0,1fr)] items-center justify-items-end overflow-hidden rounded-lg p-0.5 transition-[width] duration-slow ease-out-quart motion-reduce:transition-none',
+        'grid w-8 shrink-0 grid-cols-[minmax(0,1fr)] items-center justify-items-end overflow-hidden rounded-lg p-0.5 transition-[width] duration-slow ease-out-quart motion-reduce:transition-none',
         !idle && 'w-16',
         className,
       )}

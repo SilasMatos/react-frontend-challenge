@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { Book } from '@/types/book'
-import { getNextStartIndex, useSearchBooks } from './use-search-books'
+import { getNextStartIndex, getPreviousStartIndex, useSearchBooks } from './use-search-books'
 import { toBook } from '../mappers/book-mapper'
 import * as booksService from '../services/books-service'
 
@@ -104,6 +104,42 @@ describe('useSearchBooks', () => {
     expect(getNextStartIndex({ items: [], totalItems: 500, startIndex: 0, pageSize: 20 })).toBeUndefined()
     expect(getNextStartIndex({ items: [book()], totalItems: 5000, startIndex: 980, pageSize: 20 })).toBeUndefined()
     expect(getNextStartIndex({ items: [book()], totalItems: 5000, startIndex: 960, pageSize: 20 })).toBe(980)
+  })
+
+  it('mantém só as últimas `maxPages` páginas e expõe o início da janela', async () => {
+    searchVolumes
+      .mockResolvedValueOnce(makeResponse(['a', 'b'], 100))
+      .mockResolvedValueOnce(makeResponse(['c', 'd'], 100))
+      .mockResolvedValueOnce(makeResponse(['e', 'f'], 100))
+
+    const { result } = renderHook(
+      () => useSearchBooks({ query: 'react', maxPages: 2 }),
+      { wrapper },
+    )
+
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    expect(result.current.windowStart).toBe(0)
+    expect(result.current.hasPreviousPage).toBe(false)
+
+    act(() => result.current.fetchNextPage())
+    await waitFor(() => expect(result.current.books.map((b) => b.id)).toEqual(['a', 'b', 'c', 'd']))
+
+    act(() => result.current.fetchNextPage())
+    await waitFor(() => expect(result.current.books.map((b) => b.id)).toEqual(['c', 'd', 'e', 'f']))
+    expect(result.current.windowStart).toBe(20)
+    expect(result.current.hasPreviousPage).toBe(true)
+
+    searchVolumes.mockResolvedValueOnce(makeResponse(['a', 'b'], 100))
+    act(() => result.current.fetchPreviousPage())
+    await waitFor(() => expect(result.current.books.map((b) => b.id)).toEqual(['a', 'b', 'c', 'd']))
+    expect(result.current.windowStart).toBe(0)
+    expect(searchVolumes).toHaveBeenLastCalledWith(expect.objectContaining({ startIndex: 0 }))
+  })
+
+  it('calcula o startIndex da página anterior', () => {
+    expect(getPreviousStartIndex({ items: [], totalItems: 100, startIndex: 0, pageSize: 20 })).toBeUndefined()
+    expect(getPreviousStartIndex({ items: [], totalItems: 100, startIndex: 40, pageSize: 20 })).toBe(20)
+    expect(getPreviousStartIndex({ items: [], totalItems: 100, startIndex: 10, pageSize: 20 })).toBe(0)
   })
 
   it('remove volumes duplicados entre páginas', async () => {

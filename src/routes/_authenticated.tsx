@@ -4,6 +4,7 @@ import { AppHeader } from '@/components/layout/app-header'
 import { NavLink } from '@/components/layout/nav-link'
 import { Button } from '@/components/ui/button'
 import { getAuthSession, useAuth } from '@/features/auth'
+import { useLastSearch } from '@/features/books'
 import { ShelfNavLink } from '@/features/bookshelf'
 import { ThemeToggle } from '@/features/theme'
 
@@ -19,6 +20,7 @@ export const Route = createFileRoute('/_authenticated')({
 function AuthenticatedLayout() {
   const navigate = Route.useNavigate()
   const { user, logout } = useAuth()
+  const lastSearch = useLastSearch()
 
   function handleLogout() {
     logout()
@@ -36,7 +38,11 @@ function AuthenticatedLayout() {
       <AppHeader
         nav={
           <>
-            <NavLink to="/" activeOptions={{ exact: true, includeSearch: false }}>
+            <NavLink
+              to="/"
+              search={lastSearch}
+              activeOptions={{ exact: true, includeSearch: false }}
+            >
               Descobrir
             </NavLink>
             <ShelfNavLink />

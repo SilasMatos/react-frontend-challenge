@@ -1,3 +1,4 @@
+export { BookshelfPage } from './pages/bookshelf-page'
 export { BookshelfScreen } from './components/bookshelf-screen'
 export { ShelfToggleButton } from './components/shelf-toggle-button'
 export { ShelfBookmarkButton } from './components/shelf-bookmark-button'

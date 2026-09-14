@@ -1,3 +1,4 @@
+export { LoginPage } from './pages/login-page'
 export { LoginForm } from './components/login-form'
 export { useAuth, getAuthSession } from './hooks/use-auth'
 export { useAuthStore } from './store/auth-store'

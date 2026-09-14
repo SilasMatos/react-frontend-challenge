@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderRoute } from '@/test/test-utils'
+import { useLastSearchStore } from '../store/last-search-store'
 import { useAuthStore } from '@/features/auth'
 import * as booksService from '../services/books-service'
 
@@ -8,6 +9,8 @@ const getVolume = vi.spyOn(booksService, 'getVolume')
 
 beforeEach(() => {
   localStorage.clear()
+  sessionStorage.clear()
+  useLastSearchStore.setState({ search: {} })
   useAuthStore.setState({
     session: {
       token: 't',
@@ -73,6 +76,19 @@ describe('BookDetailScreen (rota /book/$bookId)', () => {
       expect(
         screen.getByRole('link', { name: /Voltar para a busca/ }),
       ).toHaveAttribute('href', '/'),
+    )
+  })
+
+  it('num acesso direto, o link de volta carrega a última busca da sessão', async () => {
+    getVolume.mockResolvedValue({ id: 'v', volumeInfo: { title: 'T' } })
+    useLastSearchStore.setState({ search: { q: 'ddd', printType: 'books' } })
+
+    renderRoute('/book/v')
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('link', { name: /Voltar para a busca/ }),
+      ).toHaveAttribute('href', '/?q=ddd&printType=books'),
     )
   })
 })

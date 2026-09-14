@@ -1,5 +1,4 @@
-import { ArrowLeft, ExternalLink, Frown } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import { ExternalLink, Frown } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,28 +9,19 @@ import type { Book } from '@/types/book'
 import { formatPublishedDate } from '@/utils/format-date'
 import { stripHtml } from '@/utils/strip-html'
 import { useBook } from '../queries/use-book'
+import { BackToSearchLink } from './back-to-search-link'
 
 export interface BookDetailScreenProps {
   bookId: string
   renderAction?: (book: Book) => ReactNode
 }
 
-const backLink = (
-  <Link
-    to="/"
-    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-  >
-    <ArrowLeft className="size-4" />
-    Voltar para a busca
-  </Link>
-)
-
 export function BookDetailScreen({ bookId, renderAction }: BookDetailScreenProps) {
   const { book, isLoading, isError, error, refetch } = useBook(bookId)
 
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8 enter-fade sm:px-6">
-      {backLink}
+      <BackToSearchLink />
 
       {isError ? (
         <EmptyState

@@ -74,7 +74,7 @@ function TableSkeleton({ rows }: { rows: number }) {
         <Skeleton className="ml-auto hidden h-3 w-12 md:block" />
         <Skeleton className="hidden h-3 w-16 sm:block" />
         <Skeleton className="h-3 w-12" />
-        <div className="w-14" />
+        <div className="w-14 shrink-0" />
       </div>
       {Array.from({ length: Math.min(rows, 10) }, (_, index) => (
         <div

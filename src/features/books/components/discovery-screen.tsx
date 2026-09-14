@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { Book } from '@/types/book'
@@ -26,6 +26,10 @@ export function DiscoveryScreen({
   const [inputValue, setInputValue] = useState(query)
   const lastSyncedQuery = useRef(query)
   const [scrollRoot, setScrollRoot] = useState<HTMLDivElement | null>(null)
+  const viewportRef = useCallback((node: HTMLDivElement | null) => {
+    node?.setAttribute('data-scroll-restoration-id', 'discovery-results')
+    setScrollRoot(node)
+  }, [])
 
   useEffect(() => {
     if (query !== lastSyncedQuery.current) {
@@ -36,8 +40,18 @@ export function DiscoveryScreen({
 
   const search = useSearchBooks({ query: inputValue, ...filters })
 
+  const lastScrolledFor = useRef<string | null>(null)
   useEffect(() => {
-    if (scrollRoot) scrollRoot.scrollTop = 0
+    if (!scrollRoot) return
+    const key = `${inputValue}|${filters.printType}|${filters.orderBy}`
+    if (lastScrolledFor.current === null) {
+      lastScrolledFor.current = key
+      return
+    }
+    if (lastScrolledFor.current !== key) {
+      lastScrolledFor.current = key
+      scrollRoot.scrollTop = 0
+    }
   }, [scrollRoot, inputValue, filters.printType, filters.orderBy])
 
   const notifiedError = useRef<string | null>(null)
@@ -81,7 +95,7 @@ export function DiscoveryScreen({
       </div>
 
       <ScrollArea
-        viewportRef={setScrollRoot}
+        viewportRef={viewportRef}
         className="-mx-1 min-h-0 flex-1"
         viewportClassName="overscroll-contain pl-1 pr-3 scroll-fade-y scroll-fade-10"
       >

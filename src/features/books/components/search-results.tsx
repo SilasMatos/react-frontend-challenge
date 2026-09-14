@@ -7,8 +7,8 @@ import { useIntersectionObserver } from '@/hooks/use-intersection-observer'
 import type { Book } from '@/types/book'
 import type { UseSearchBooksResult } from '../queries/use-search-books'
 import { BOOKS_PAGE_SIZE } from '../types/search'
-import { BookCard } from './book-card'
 import { BookCardSkeleton } from './book-card-skeleton'
+import { VirtualBookGrid } from './virtual-book-grid'
 
 export interface SearchResultsProps {
   search: UseSearchBooksResult
@@ -35,6 +35,7 @@ export function SearchResults({
     root: scrollRoot,
     rootMargin: '240px',
   })
+  const canFetchPrevious = search.hasPreviousPage && !search.isFetching
 
   if (search.status === 'idle') {
     return (
@@ -104,22 +105,21 @@ export function SearchResults({
       {(books) => (
         <div className="flex flex-col gap-4">
           <p className="text-xs text-muted-foreground" aria-live="polite">
-            <span className="tabular-nums">{formatCount(books.length)}</span> de cerca de{' '}
+            <span className="tabular-nums">
+              {formatCount(search.windowStart + books.length)}
+            </span>{' '}
+            de cerca de{' '}
             <span className="tabular-nums">{formatCount(search.totalItems)}</span>{' '}
             resultados
           </p>
 
-          <ul className={gridClass}>
-            {books.map((book, index) => (
-              <li
-                key={book.id}
-                className="enter-rise"
-                style={{ animationDelay: `${Math.min(index % BOOKS_PAGE_SIZE, 10) * 30}ms` }}
-              >
-                <BookCard book={book} action={renderAction?.(book)} className="h-full" />
-              </li>
-            ))}
-          </ul>
+          <VirtualBookGrid
+            books={books}
+            windowStart={search.windowStart}
+            scrollRoot={scrollRoot}
+            renderAction={renderAction}
+            onReachStart={canFetchPrevious ? search.fetchPreviousPage : undefined}
+          />
 
           {search.hasNextPage ? (
             <div ref={sentinelRef} className="flex min-h-12 items-center justify-center py-2">

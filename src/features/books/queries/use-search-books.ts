@@ -20,6 +20,8 @@ import {
 
 const SEARCH_DEBOUNCE_MS = 400
 
+export const BOOKS_MAX_PAGES = 10
+
 export type BookSearchStatus =
   | 'idle'
   | 'loading'
@@ -29,6 +31,7 @@ export type BookSearchStatus =
 
 export interface UseSearchBooksParams extends Partial<BookSearchFilters> {
   query: string
+  maxPages?: number
 }
 
 export interface UseSearchBooksResult {
@@ -38,22 +41,33 @@ export interface UseSearchBooksResult {
   isDebouncing: boolean
   error: Error | null
   totalItems: number
+  windowStart: number
   hasNextPage: boolean
   isFetchingNextPage: boolean
   nextPageError: Error | null
   fetchNextPage: () => void
+  hasPreviousPage: boolean
+  isFetchingPreviousPage: boolean
+  fetchPreviousPage: () => void
   refetch: () => void
 }
 
 interface SearchSelection {
   books: Book[]
   totalItems: number
+  windowStart: number
 }
 
 export function getNextStartIndex(lastPage: Paginated<Book>): number | undefined {
   const next = lastPage.startIndex + lastPage.pageSize
   const limit = Math.min(lastPage.totalItems, BOOKS_MAX_RESULT_WINDOW)
   return lastPage.items.length > 0 && next < limit ? next : undefined
+}
+
+export function getPreviousStartIndex(firstPage: Paginated<Book>): number | undefined {
+  return firstPage.startIndex > 0
+    ? Math.max(firstPage.startIndex - firstPage.pageSize, 0)
+    : undefined
 }
 
 export function compareByNewest(a: Book, b: Book): number {
@@ -74,13 +88,18 @@ export function selectBooks(
     }
   }
   if (orderBy === 'newest') books.sort(compareByNewest)
-  return { books, totalItems: data.pages[0]?.totalItems ?? 0 }
+  return {
+    books,
+    totalItems: data.pages[0]?.totalItems ?? 0,
+    windowStart: data.pages[0]?.startIndex ?? 0,
+  }
 }
 
 export function useSearchBooks({
   query,
   printType = DEFAULT_BOOK_SEARCH_FILTERS.printType,
   orderBy = DEFAULT_BOOK_SEARCH_FILTERS.orderBy,
+  maxPages = BOOKS_MAX_PAGES,
 }: UseSearchBooksParams): UseSearchBooksResult {
   const trimmedQuery = query.trim()
   const debouncedQuery = useDebounce(trimmedQuery, SEARCH_DEBOUNCE_MS)
@@ -106,6 +125,8 @@ export function useSearchBooks({
     },
     initialPageParam: 0,
     getNextPageParam: getNextStartIndex,
+    getPreviousPageParam: getPreviousStartIndex,
+    maxPages,
     select,
     enabled,
     placeholderData: keepPreviousData,
@@ -132,10 +153,14 @@ export function useSearchBooks({
     isDebouncing: trimmedQuery !== debouncedQuery,
     error: result.error,
     totalItems: data?.totalItems ?? 0,
+    windowStart: data?.windowStart ?? 0,
     hasNextPage: result.hasNextPage && !result.isPlaceholderData,
     isFetchingNextPage: result.isFetchingNextPage,
     nextPageError: result.isFetchNextPageError ? result.error : null,
     fetchNextPage: () => void result.fetchNextPage(),
+    hasPreviousPage: result.hasPreviousPage && !result.isPlaceholderData,
+    isFetchingPreviousPage: result.isFetchingPreviousPage,
+    fetchPreviousPage: () => void result.fetchPreviousPage(),
     refetch: () => void result.refetch(),
   }
 }

@@ -41,7 +41,7 @@ const COLUMN_CLASS: Record<string, string> = {
   authors: 'hidden w-[26%] md:table-cell',
   publishedDate: 'hidden w-24 sm:table-cell',
   status: 'w-[8rem] sm:w-[9.5rem]',
-  actions: 'w-14 pl-0 text-right',
+  actions: 'w-20 pl-0 text-right',
 }
 
 function authorsOf(item: BookshelfItem): string {

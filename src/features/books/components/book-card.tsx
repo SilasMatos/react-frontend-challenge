@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { twMerge } from 'tailwind-merge'
 import { BookCover } from '@/components/book-cover'
 import type { Book } from '@/types/book'
+import { usePrefetchBook } from '../queries/use-prefetch-book'
 import { getPublishedYear } from '@/utils/format-date'
 
 export interface BookCardProps {
@@ -19,10 +20,15 @@ function authorLine(authors: string[]): string {
 
 export function BookCard({ book, action, className }: BookCardProps) {
   const year = getPublishedYear(book.publishedDate)
+  const { prefetch, cancel } = usePrefetchBook()
 
   return (
     <article
       data-slot="book-card"
+      onMouseEnter={() => prefetch(book.id)}
+      onMouseLeave={cancel}
+      onFocus={() => prefetch(book.id)}
+      onBlur={cancel}
       className={twMerge(
         'group relative flex gap-3 rounded-lg border border-border bg-card p-3 text-left',
         'hover-lift hover:border-ring/40 hover:bg-muted/40',

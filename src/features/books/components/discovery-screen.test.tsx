@@ -4,10 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderRoute } from '@/test/test-utils'
 import { useAuthStore } from '@/features/auth'
 import * as booksService from '../services/books-service'
+import { useLastSearchStore } from '../store/last-search-store'
 
 vi.mock('@/hooks/use-debounce', () => ({ useDebounce: (value: unknown) => value }))
 
 const searchVolumes = vi.spyOn(booksService, 'searchVolumes')
+const getVolume = vi.spyOn(booksService, 'getVolume')
 
 function volumes(titles: string[], totalItems = titles.length) {
   return {
@@ -21,6 +23,8 @@ function volumes(titles: string[], totalItems = titles.length) {
 
 beforeEach(() => {
   localStorage.clear()
+  sessionStorage.clear()
+  useLastSearchStore.setState({ search: {} })
   useAuthStore.setState({
     session: {
       token: 't',
@@ -32,6 +36,7 @@ beforeEach(() => {
 
 afterEach(() => {
   searchVolumes.mockReset()
+  getVolume.mockReset()
   useAuthStore.setState({ session: null })
 })
 
@@ -235,6 +240,53 @@ describe('DiscoveryScreen', () => {
         expect.objectContaining({ printType: 'books', query: 'js' }),
       ),
     )
+  })
+
+  it('faz prefetch do detalhe ao passar o mouse no card e reaproveita ao abrir', async () => {
+    const user = userEvent.setup()
+    searchVolumes.mockResolvedValue(volumes(['Clean Code'], 1))
+    getVolume.mockResolvedValue({
+      id: 'id-0',
+      volumeInfo: { title: 'Clean Code', authors: ['Autora X'], publisher: 'Prentice Hall' },
+    })
+
+    renderRoute('/')
+    await user.type(await screen.findByRole('searchbox'), 'code')
+    const link = await screen.findByRole('link', { name: /Clean Code/ })
+
+    await user.hover(link)
+    await waitFor(() => expect(getVolume).toHaveBeenCalledTimes(1))
+
+    await user.click(link)
+    expect(await screen.findByText('Prentice Hall')).toBeInTheDocument()
+    expect(getVolume).toHaveBeenCalledTimes(1)
+  })
+
+  it('volta do detalhe para a mesma busca, com termo e resultados preservados', async () => {
+    const user = userEvent.setup()
+    searchVolumes.mockResolvedValue(volumes(['Clean Code', 'Refactoring'], 2))
+    getVolume.mockResolvedValue({ id: 'id-0', volumeInfo: { title: 'Clean Code' } })
+
+    renderRoute('/')
+    await user.type(await screen.findByRole('searchbox'), 'code')
+    await user.click(await screen.findByRole('link', { name: /Clean Code/ }))
+    await screen.findByRole('link', { name: /Voltar para a busca/ })
+    expect(useLastSearchStore.getState().search).toEqual({ q: 'code' })
+
+    const callsBeforeBack = searchVolumes.mock.calls.length
+    await user.click(screen.getByRole('link', { name: /Voltar para a busca/ }))
+
+    expect(await screen.findByRole('searchbox')).toHaveValue('code')
+    expect(await screen.findByRole('link', { name: /Refactoring/ })).toBeInTheDocument()
+    expect(searchVolumes).toHaveBeenCalledTimes(callsBeforeBack)
+  })
+
+  it('o link "Descobrir" do header leva de volta à última busca', async () => {
+    useLastSearchStore.setState({ search: { q: 'react', orderBy: 'newest' } })
+    renderRoute('/estante')
+
+    const link = await screen.findByRole('link', { name: 'Descobrir' })
+    expect(link).toHaveAttribute('href', '/?q=react&orderBy=newest')
   })
 
   it('aplica o filtro de ordenação (TanStack Form)', async () => {
